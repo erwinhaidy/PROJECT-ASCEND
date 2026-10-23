@@ -1,330 +1,457 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ad Meliora - HM 2:00 Tracker</title>
+    <title>HM 52-Week Transition Dashboard (9:30 to 2:00)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            950: '#080c14',
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155'
+                        },
+                        brand: {
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            400: '#60a5fa',
+                            accent: '#10b981'
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
     </style>
 </head>
-<body class="pb-24">
+<body class="bg-dark-950 text-slate-100 h-full flex flex-col justify-between selection:bg-brand-500 selection:text-white">
 
-    <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex justify-between items-center">
-        <div>
-            <h1 class="font-bold text-lg text-white flex items-center gap-2">
-                <i class="fa-solid fa-person-running text-blue-500"></i> Ad Meliora HM 2:00
-            </h1>
-            <p class="text-xs text-slate-400" id="header-date">Memuat tanggal...</p>
+    <!-- Top Header -->
+    <header class="bg-dark-900/90 backdrop-blur-md sticky top-0 z-40 border-b border-dark-800 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                <i class="fa-solid fa-person-running text-white text-sm"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-sm tracking-tight text-white">HM 9:30 ➔ 2:00</h1>
+                <p class="text-xs text-slate-400" id="header-subtitle">Memuat data program...</p>
+            </div>
         </div>
-        <div class="bg-blue-600/20 border border-blue-500/30 px-3 py-1 rounded-full text-blue-400 text-xs font-semibold">
-            Target: 2:00 (5:41/km)
-        </div>
+        <button onclick="resetData()" class="text-xs bg-dark-800 hover:bg-dark-700 text-slate-300 px-2.5 py-1.5 rounded-lg border border-dark-700 transition">Reset</button>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-md mx-auto p-4">
+    <!-- Main Viewport -->
+    <main class="flex-1 overflow-y-auto pb-24 px-4 pt-4 max-w-md mx-auto w-full space-y-4">
 
-        <!-- TAB 1: HARI INI (TODAY) -->
-        <div id="tab-today" class="tab-content active space-y-4">
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg">
-                <div class="flex justify-between items-start mb-3">
-                    <span id="today-phase" class="bg-blue-500/20 text-blue-400 text-xs px-2.5 py-1 rounded-md font-medium">Fase 1: Fondasi</span>
-                    <span id="today-dayname" class="text-slate-400 text-sm font-semibold">Senin</span>
-                </div>
-                <h2 id="today-session" class="text-xl font-bold text-white mb-2">Strength Training A</h2>
-                <p id="today-details" class="text-slate-300 text-sm mb-4 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">Push-up/Bench 3x8; DB Row 3x8; Plank 3x45s.</p>
-                
-                <div class="grid grid-cols-2 gap-3 mb-4 text-xs">
-                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700">
-                        <span class="text-slate-400 block">Durasi / Volume</span>
-                        <span id="today-duration" class="font-semibold text-white text-sm">45-60 min</span>
-                    </div>
-                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700">
-                        <span class="text-slate-400 block">Target Jarak / Intensitas</span>
-                        <span id="today-intensity" class="font-semibold text-white text-sm">RPE 6-7</span>
-                    </div>
-                </div>
-
-                <!-- Checklist & Complete Button -->
-                <div class="flex items-center justify-between pt-3 border-t border-slate-700">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" id="today-checkbox" onchange="toggleTodayComplete()" class="w-5 h-5 accent-blue-600 rounded">
-                        <span class="text-sm font-medium text-slate-200">Selesai Latihan Hari Ini</span>
-                    </label>
-                    <span id="today-status" class="text-xs text-slate-400">Belum</span>
+        <!-- TAB 1: TODAY'S WORKOUT -->
+        <section id="tab-today" class="tab-content active space-y-4">
+            <!-- Banner -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-900 p-5 shadow-xl">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="relative z-10">
+                    <span id="banner-phase" class="inline-block px-2.5 py-1 rounded-full bg-black/20 text-emerald-300 text-xs font-semibold mb-2">Fase 1: Aerobic Base (9:30/km)</span>
+                    <h2 class="text-xl font-bold text-white mb-1">Konsistensi & Adaptasi</h2>
+                    <p class="text-xs text-blue-100 leading-relaxed">Senin & Kamis Strength Training saat puasa. Sabtu Long Run bertahap menuju target 2 jam!</p>
                 </div>
             </div>
 
-            <!-- Daily Logger -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
-                <h3 class="font-semibold text-sm text-white flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-blue-400"></i> Catat Hasil Latihan Anda
+            <!-- Progress Card -->
+            <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-semibold text-slate-200">Progress 52 Minggu</h3>
+                    <span id="progress-percent" class="text-xs font-bold text-brand-400">0%</span>
+                </div>
+                <div class="w-full bg-dark-800 h-2.5 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-brand-500 to-emerald-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between items-center text-xs text-slate-400">
+                    <span id="completed-count">0 dari 364 sesi selesai</span>
+                    <span id="streak-count">🔥 0 Hari Selesai</span>
+                </div>
+            </div>
+
+            <!-- Day Selector & Workout Card -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-semibold text-slate-200">Jadwal Sesi Latihan</h3>
+                    <select id="select-day-picker" onchange="changeActiveDay(this.value)" class="bg-dark-800 border border-dark-700 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 outline-none font-medium">
+                        <option value="1">Senin (Strength A - Puasa)</option>
+                        <option value="2">Selasa (Easy Run)</option>
+                        <option value="3">Rabu (Rest & Mobility)</option>
+                        <option value="4">Kamis (Strength B - Puasa)</option>
+                        <option value="5">Jumat (Functional Strength)</option>
+                        <option value="6">Sabtu (Long Run)</option>
+                        <option value="0">Minggu (Rest Total)</option>
+                    </select>
+                </div>
+
+                <div id="today-card" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Logger Card -->
+            <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-brand-400"></i> Catatan & Hasil Latihan
                 </h3>
                 <div>
-                    <label class="text-xs text-slate-400 block mb-1">Jarak Aktual (km) / Catatan</label>
-                    <input type="text" id="log-note" placeholder="Contoh: Selesai lancar, pace 7:15/km" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                    <input type="text" id="log-note" placeholder="Contoh: Selesai nyaman, pace rata-rata 9:25/km" class="w-full bg-dark-800 border border-dark-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-brand-500">
                 </div>
-                <button onclick="saveDailyLog()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl text-sm font-semibold transition">
+                <button onclick="saveDailyLog()" class="w-full bg-brand-600 hover:bg-brand-500 text-white py-2.5 rounded-xl text-xs font-semibold transition">
                     Simpan Catatan Hari Ini
                 </button>
             </div>
-        </div>
+        </section>
 
-        <!-- TAB 2: JADWAL 45 MINGGU (SCHEDULE) -->
-        <div id="tab-schedule" class="tab-content space-y-4">
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4">
-                <label class="text-xs text-slate-400 block mb-2 font-medium">Pilih Minggu Latihan (1 - 45)</label>
-                <select id="week-selector" onchange="loadWeekSchedule()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
-                    <!-- Javascript will populate weeks -->
+        <!-- TAB 2: 52-WEEK SCHEDULE -->
+        <section id="tab-schedule" class="tab-content space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-bold text-white">Jadwal 52 Minggu</h2>
+                <select id="week-selector" onchange="switchWeek(this.value)" class="bg-dark-800 border border-dark-700 text-xs text-slate-200 rounded-xl px-3 py-1.5 font-medium outline-none">
+                    <!-- Populated by JS -->
                 </select>
             </div>
 
-            <div id="week-days-container" class="space-y-3">
-                <!-- Days populated by JS -->
+            <div id="week-info-banner" class="bg-dark-900 border border-dark-800 rounded-xl p-3 text-xs flex justify-between items-center">
+                <!-- Populated by JS -->
             </div>
-        </div>
 
-        <!-- TAB 3: STATISTIK & PANDUAN (STATS & GUIDE) -->
-        <div id="tab-stats" class="tab-content space-y-4">
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
-                <h3 class="font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-blue-400"></i> Statistik & Progres
-                </h3>
-                <div class="grid grid-cols-2 gap-3 text-center">
-                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700">
-                        <span id="stat-completed" class="text-2xl font-bold text-blue-400">0</span>
-                        <span class="text-xs text-slate-400 block mt-1">Hari Selesai</span>
+            <div id="week-days-list" class="space-y-3">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- TAB 3: STATS & PACE ZONES -->
+        <section id="tab-stats" class="tab-content space-y-4">
+            <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
+                <h2 class="text-base font-bold text-white">Statistik & Progres</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-dark-800 p-3.5 rounded-xl border border-dark-700">
+                        <div class="text-slate-400 text-xs">Total Selesai</div>
+                        <div id="stat-completed" class="text-xl font-bold text-white mt-1">0</div>
                     </div>
-                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700">
-                        <span id="stat-streak" class="text-2xl font-bold text-emerald-400">0</span>
-                        <span class="text-xs text-slate-400 block mt-1">Streak (Hari)</span>
+                    <div class="bg-dark-800 p-3.5 rounded-xl border border-dark-700">
+                        <div class="text-slate-400 text-xs">Sisa Sesi</div>
+                        <div id="stat-remaining" class="text-xl font-bold text-white mt-1">364</div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
-                <h3 class="font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-gauge-high text-emerald-400"></i> Panduan Pace Latihan
+            <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-emerald-400"></i> Panduan Progresi Pace
                 </h3>
-                <ul class="text-xs space-y-2 text-slate-300">
-                    <li class="flex justify-between bg-slate-900 p-2.5 rounded-lg border border-slate-700">
-                        <span>Easy / Recovery Pace</span>
-                        <strong class="text-white">6:15 – 7:40 /km</strong>
-                    </li>
-                    <li class="flex justify-between bg-slate-900 p-2.5 rounded-lg border border-slate-700">
-                        <span>Tempo / Threshold</span>
-                        <strong class="text-white">5:30 – 6:35 /km</strong>
-                    </li>
-                    <li class="flex justify-between bg-slate-900 p-2.5 rounded-lg border border-slate-700">
-                        <span>Target Race Pace (HM)</span>
-                        <strong class="text-emerald-400">5:41 /km</strong>
-                    </li>
-                </ul>
+                <div class="space-y-2 text-xs text-slate-300">
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
+                        <div class="font-bold text-brand-400 mb-0.5">Fase 1 (Minggu 1 - 13)</div>
+                        <div>Easy Pace: <strong class="text-white">9:00 - 9:30 /km</strong></div>
+                        <div class="text-slate-400 text-[11px] mt-1">Fokus membangun fondasi aerobik dasar dan adaptasi sendi.</div>
+                    </div>
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
+                        <div class="font-bold text-brand-400 mb-0.5">Fase 2 (Minggu 14 - 26)</div>
+                        <div>Easy Pace: <strong class="text-white">8:00 - 8:50 /km</strong></div>
+                        <div class="text-slate-400 text-[11px] mt-1">Peningkatan stamina kardiovaskular & jarak long run.</div>
+                    </div>
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
+                        <div class="font-bold text-brand-400 mb-0.5">Fase 3 (Minggu 27 - 39)</div>
+                        <div>Easy Pace: <strong class="text-white">7:00 - 7:50 /km</strong></div>
+                        <div class="text-slate-400 text-[11px] mt-1">Pengenalan tempo/threshold run & interval menengah.</div>
+                    </div>
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
+                        <div class="font-bold text-emerald-400 mb-0.5">Fase 4 (Minggu 40 - 52) - Target 2 Jam</div>
+                        <div>Easy Pace: <strong class="text-white">6:15 - 6:50 /km</strong> | Race Pace: <strong class="text-emerald-400">5:41 /km</strong></div>
+                        <div class="text-slate-400 text-[11px] mt-1">Simulasi lomba Half Marathon 2 jam & peak mileage 40-50 km/minggu.</div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
 
     </main>
 
-    <!-- Bottom Navigation Bar for iPhone -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 px-6 py-3 flex justify-around items-center z-50 max-w-md mx-auto">
-        <button onclick="switchTab('today')" id="nav-today" class="flex flex-col items-center text-blue-500 transition">
-            <i class="fa-solid fa-calendar-day text-lg"></i>
-            <span class="text-[10px] mt-1 font-medium">Hari Ini</span>
+    <!-- Bottom Navigation Bar (iPhone PWA Style) -->
+    <nav class="bg-dark-900/95 backdrop-blur-md fixed bottom-0 left-0 right-0 border-t border-dark-800 h-16 flex justify-around items-center z-50 px-2 max-w-md mx-auto">
+        <button onclick="switchTab('today')" id="nav-today" class="flex flex-col items-center justify-center flex-1 py-1 text-brand-400 transition">
+            <i class="fa-solid fa-calendar-day text-lg mb-1"></i>
+            <span class="text-[10px] font-medium">Hari Ini</span>
         </button>
-        <button onclick="switchTab('schedule')" id="nav-schedule" class="flex flex-col items-center text-slate-400 transition">
-            <i class="fa-solid fa-list-check text-lg"></i>
-            <span class="text-[10px] mt-1 font-medium">Jadwal</span>
+        <button onclick="switchTab('schedule')" id="nav-schedule" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
+            <i class="fa-solid fa-list-check text-lg mb-1"></i>
+            <span class="text-[10px] font-medium">Jadwal 52W</span>
         </button>
-        <button onclick="switchTab('stats')" id="nav-stats" class="flex flex-col items-center text-slate-400 transition">
-            <i class="fa-solid fa-trophy text-lg"></i>
-            <span class="text-[10px] mt-1 font-medium">Statistik</span>
+        <button onclick="switchTab('stats')" id="nav-stats" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
+            <i class="fa-solid fa-chart-line text-lg mb-1"></i>
+            <span class="text-[10px] font-medium">Statistik</span>
         </button>
     </nav>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-xl opacity-0 pointer-events-none transition-all duration-300 z-50">
+        Perubahan disimpan!
+    </div>
+
+    <!-- Application Script -->
     <script>
-        // Program Start Date: October 26, 2026
+        // Start date: October 26, 2026
         const startDate = new Date(2026, 9, 26);
         const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
         
-        // Load data from localStorage
-        let savedProgress = JSON.parse(localStorage.getItem('hm_progress') || '{}');
-        let savedLogs = JSON.parse(localStorage.getItem('hm_logs') || '{}');
+        let completedWorkouts = JSON.parse(localStorage.getItem('hm_52w_completed')) || {};
+        let dailyLogs = JSON.parse(localStorage.getItem('hm_52w_logs')) || {};
+        
+        let currentWeek = 1;
+        let selectedDayForDashboard = getTodayDayOfWeek(); // Default to today's day of week
 
-        function getTodayIndex() {
+        function getTodayDayOfWeek() {
             const today = new Date();
             const diffTime = today - startDate;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays >= 0 ? diffDays : 0;
+            if (diffDays < 0) return 1; // Default Monday if before start
+            currentWeek = Math.floor(diffDays / 7) + 1;
+            if (currentWeek > 52) currentWeek = 52;
+            return today.getDay(); // 0=Sun, 1=Mon...
         }
 
-        const currentDayIndex = getTodayIndex();
-        const currentWeekNum = Math.floor(currentDayIndex / 7) + 1;
-        const currentDayOfWeek = currentDayIndex % 7; // 0=Sun, 1=Mon, ...
+        function getPhaseForWeek(w) {
+            if (w <= 13) return { name: 'Fase 1: Aerobic Base', easy: '9:00 - 9:30 /km', target: '2:45' };
+            if (w <= 26) return { name: 'Fase 2: Stamina & Efficiency', easy: '8:00 - 8:50 /km', target: '2:30' };
+            if (w <= 39) return { name: 'Fase 3: Threshold & Stamina', easy: '7:00 - 7:50 /km', target: '2:15' };
+            return { name: 'Fase 4: Peak & Race Specific', easy: '6:15 - 6:50 /km', target: '2:00 (5:41 /km)' };
+        }
 
-        function initApp() {
-            const todayDateObj = new Date();
-            document.getElementById('header-date').innerText = todayDateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        function getWorkoutForDay(week, dayIndex) {
+            let phase = getPhaseForWeek(week);
             
-            loadTodayData();
-            populateWeekSelector();
+            // Easy run distance progression (starts at 3-4km, peaks at 8-9km)
+            let easyDist = 3 + Math.floor((week - 1) * 0.11);
+            if (easyDist > 9) easyDist = 9;
+
+            // Long run distance progression (starts at 6km, peaks at 20km)
+            let longDist = 6 + Math.floor((week - 1) * 0.28);
+            if (longDist > 20) longDist = 20;
+
+            switch(dayIndex) {
+                case 1: // Senin
+                    return { type: 'Strength', title: 'Strength A (Upper & Core) [Puasa]', desc: 'Push-up 3x8, DB Row 3x8, Plank 3x45s.', distance: '—', category: 'Strength' };
+                case 2: // Selasa
+                    return { type: 'Run', title: `Easy Aerobic Run (${easyDist} km)`, desc: `Pase santai (${phase.easy}) menjaga denyut jantung zona 2.`, distance: `${easyDist} km`, category: 'Run' };
+                case 3: // Rabu
+                    return { type: 'Rest', title: 'Rest & Light Mobility', desc: 'Peregangan dinamis 15 menit & pemulihan aktif.', distance: '—', category: 'Rest' };
+                case 4: // Kamis
+                    return { type: 'Strength', title: 'Strength B (Lower & Posterior) [Puasa]', desc: 'Goblet Squat 3x8, RDL 3x8, Calf Raise 3x15.', distance: '—', category: 'Strength' };
+                case 5: // Jumat
+                    return { type: 'Strength', title: 'Functional Stability & Core', desc: 'Split Squat 3x8/leg, Bird-Dog, Core rotations.', distance: '—', category: 'Strength' };
+                case 6: // Sabtu
+                    return { type: 'LongRun', title: `Long Easy Run (${longDist} km)`, desc: 'Menu utama ketahanan akhir pekan. Pertahankan ritme stabil.', distance: `${longDist} km`, category: 'Run' };
+                case 0: // Minggu
+                    return { type: 'Rest', title: 'Rest & Complete Recovery', desc: 'Pemulihan total fisik & mental.', distance: '—', category: 'Rest' };
+            }
+        }
+
+        window.onload = function() {
+            initWeekSelector();
+            updateDashboard();
+            renderScheduleWeek();
             updateStats();
-        }
-
-        function getDayWorkout(weekNum, dayOfWeek) {
-            // dayOfWeek: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-            let phase = "Fase 1: Fondasi (2:45 -> 2:35)";
-            let easyPace = "7:10-7:40 /km";
-            let longDist = 8 + Math.floor((weekNum - 1) / 3);
-
-            if (weekNum > 12 && weekNum <= 23) {
-                phase = "Fase 2: Stamina (2:35 -> 2:20)";
-                easyPace = "6:40-7:15 /km";
-                longDist = 11 + Math.floor((weekNum - 13) / 3);
-            } else if (weekNum > 23 && weekNum <= 34) {
-                phase = "Fase 3: Threshold (2:20 -> 2:10)";
-                easyPace = "6:10-6:35 /km";
-                longDist = 14 + Math.floor((weekNum - 24) / 3);
-            } else if (weekNum > 34) {
-                phase = "Fase 4: Peak & Race (2:10 -> 2:00)";
-                easyPace = "5:41-6:00 /km";
-                longDist = 17 + Math.floor((weekNum - 35) / 3);
-            }
-
-            let workout = {};
-            if (dayOfWeek === 1) { // Senin (Puasa -> Strength A)
-                workout = { session: "Strength Training A (Upper & Core)", details: "Push-up/Bench 3x8; DB Row 3x8; Overhead Press 3x8; Plank 3x45s", duration: "45-60 min", dist: "—", intensity: "RPE 6-7", fasting: true };
-            } else if (dayOfWeek === 2) { // Selasa
-                let tDist = 4 + Math.floor((weekNum - 1) / 6);
-                workout = { session: "Easy Run / Tempo Intro", details: `Conversational run at ${easyPace} + 4x15s strides`, duration: `${30 + tDist * 5} min`, dist: `${tDist} km`, intensity: "RPE 3-4", fasting: false };
-            } else if (dayOfWeek === 3) { // Rabu
-                workout = { session: "Rest + Light Mobility", details: "15-20 min gentle stretching, foam rolling, active recovery", duration: "15-20 min", dist: "—", intensity: "RPE 1-2", fasting: false };
-            } else if (dayOfWeek === 4) { // Kamis (Puasa -> Strength B)
-                workout = { session: "Strength Training B (Lower & Posterior)", details: "Goblet Squat 3x8; RDL 3x8; Hip Thrust 3x10; Calf Raise 3x15", duration: "45-60 min", dist: "—", intensity: "RPE 6-7", fasting: true };
-            } else if (dayOfWeek === 5) { // Jumat
-                workout = { session: "Functional Strength & Mobility", details: "Split Squat 3x8/leg; Pull-up/Row 3x6-10; Core rotations", duration: "45-60 min", dist: "—", intensity: "RPE 6-7", fasting: false };
-            } else if (dayOfWeek === 6) { // Sabtu
-                workout = { session: "Long Easy Run", details: `Continuous aerobic long run at ${easyPace}`, duration: `${60 + longDist * 6} min`, dist: `${longDist} km`, intensity: "RPE 4-5", fasting: false };
-            } else { // Minggu
-                workout = { session: "Rest + Complete Recovery", details: "Complete rest or very light leisure walk", duration: "0-20 min", dist: "—", intensity: "RPE 1", fasting: false };
-            }
-            workout.phase = phase;
-            return workout;
-        }
-
-        function loadTodayData() {
-            const todayWorkout = getDayWorkout(currentWeekNum, currentDayOfWeek);
-            const dateKey = `day_${currentDayIndex}`;
-
-            document.getElementById('today-phase').innerText = todayWorkout.phase;
-            document.getElementById('today-dayname').innerText = `${dayNames[currentDayOfWeek]} (Minggu ${currentWeekNum})`;
-            document.getElementById('today-session').innerText = todayWorkout.session;
-            document.getElementById('today-details').innerText = todayWorkout.details;
-            document.getElementById('today-duration').innerText = todayWorkout.duration;
-            document.getElementById('today-intensity').innerText = `${todayWorkout.dist !== '—' ? 'Jarak: ' + todayWorkout.dist + ' | ' : ''} Intensitas: ${todayWorkout.intensity}`;
-
-            const isChecked = savedProgress[dateKey] || false;
-            document.getElementById('today-checkbox').checked = isChecked;
-            document.getElementById('today-status').innerText = isChecked ? "Selesai ✓" : "Belum";
-            document.getElementById('today-status').className = isChecked ? "text-xs text-emerald-400 font-semibold" : "text-xs text-slate-400";
-
-            if (savedLogs[dateKey]) {
-                document.getElementById('log-note').value = savedLogs[dateKey];
-            }
-        }
-
-        function toggleTodayComplete() {
-            const dateKey = `day_${currentDayIndex}`;
-            const isChecked = document.getElementById('today-checkbox').checked;
-            savedProgress[dateKey] = isChecked;
-            localStorage.setItem('hm_progress', JSON.stringify(savedProgress));
-            
-            document.getElementById('today-status').innerText = isChecked ? "Selesai ✓" : "Belum";
-            document.getElementById('today-status').className = isChecked ? "text-xs text-emerald-400 font-semibold" : "text-xs text-slate-400";
-            updateStats();
-        }
-
-        function saveDailyLog() {
-            const dateKey = `day_${currentDayIndex}`;
-            const note = document.getElementById('log-note').value;
-            savedLogs[dateKey] = note;
-            localStorage.setItem('hm_logs', JSON.stringify(savedLogs));
-            alert("Catatan latihan berhasil disimpan!");
-        }
-
-        function populateWeekSelector() {
-            const select = document.getElementById('week-selector');
-            for (let i = 1; i <= 45; i++) {
-                let opt = document.createElement('option');
-                opt.value = i;
-                opt.innerText = `Minggu ${i} ${i === currentWeekNum ? '(Minggu Ini)' : ''}`;
-                if (i === currentWeekNum) opt.selected = true;
-                select.appendChild(opt);
-            }
-            loadWeekSchedule();
-        }
-
-        function loadWeekSchedule() {
-            const selectedWeek = parseInt(document.getElementById('week-selector').value);
-            const container = document.getElementById('week-days-container');
-            container.innerHTML = '';
-
-            for (let d = 1; d <= 6; d++) { // Mon to Sat + Sun (0)
-                let dayIdx = d; // 1=Mon, 2=Tue, ..., 6=Sat, 0=Sun
-                let wObj = getDayWorkout(selectedWeek, dayIdx);
-                let div = document.createElement('div');
-                div.className = "bg-slate-900 border border-slate-700/80 p-3.5 rounded-xl space-y-1";
-                div.innerHTML = `
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="font-bold text-blue-400">${dayNames[dayIdx]}</span>
-                        <span class="text-slate-400">${wObj.dist !== '—' ? wObj.dist : wObj.duration}</span>
-                    </div>
-                    <h4 class="font-semibold text-white text-sm">${wObj.session}</h4>
-                    <p class="text-xs text-slate-300">${wObj.details}</p>
-                `;
-                container.appendChild(div);
-            }
-            // Add Sunday (0)
-            let sunObj = getDayWorkout(selectedWeek, 0);
-            let divSun = document.createElement('div');
-            divSun.className = "bg-slate-900 border border-slate-700/80 p-3.5 rounded-xl space-y-1";
-            divSun.innerHTML = `
-                <div class="flex justify-between items-center text-xs">
-                    <span class="font-bold text-blue-400">Minggu</span>
-                    <span class="text-slate-400">${sunObj.duration}</span>
-                </div>
-                <h4 class="font-semibold text-white text-sm">${sunObj.session}</h4>
-                <p class="text-xs text-slate-300">${sunObj.details}</p>
-            `;
-            container.appendChild(divSun);
-        }
-
-        function updateStats() {
-            let completedCount = Object.values(savedProgress).filter(v => v === true).length;
-            document.getElementById('stat-completed').innerText = completedCount;
-            document.getElementById('stat-streak').innerText = completedCount; // Simplified streak counter
-        }
+        };
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(el => {
-                el.classList.remove('text-blue-500');
-                el.classList.add('text-slate-400');
-            });
-
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            let btn = document.getElementById(`nav-${tabId}`);
-            btn.classList.remove('text-slate-400');
-            btn.classList.add('text-blue-500');
+
+            ['today', 'schedule', 'stats'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                btn.className = t === tabId 
+                    ? 'flex flex-col items-center justify-center flex-1 py-1 text-brand-400 transition' 
+                    : 'flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition';
+            });
+            window.scrollTo(0, 0);
         }
 
-        window.onload = initApp;
+        function initWeekSelector() {
+            const selector = document.getElementById('week-selector');
+            selector.innerHTML = '';
+            for (let i = 1; i <= 52; i++) {
+                let phase = getPhaseForWeek(i);
+                let opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `Minggu ${i} (${phase.name.split(':')[0]})`;
+                selector.appendChild(opt);
+            }
+            selector.value = currentWeek;
+        }
+
+        function switchWeek(w) {
+            currentWeek = parseInt(w);
+            renderScheduleWeek();
+        }
+
+        function changeActiveDay(val) {
+            selectedDayForDashboard = parseInt(val);
+            updateDashboardCard();
+        }
+
+        function updateDashboard() {
+            let phase = getPhaseForWeek(currentWeek);
+            document.getElementById('header-subtitle').textContent = `${phase.name} • Minggu ${currentWeek}/52`;
+            document.getElementById('banner-phase').textContent = `${phase.name} (Easy: ${phase.easy})`;
+            document.getElementById('select-day-picker').value = selectedDayForDashboard;
+            updateDashboardCard();
+            updateStats();
+        }
+
+        function updateDashboardCard() {
+            const card = document.getElementById('today-card');
+            const workout = getWorkoutForDay(currentWeek, selectedDayForDashboard);
+            const key = `w${currentWeek}_d${selectedDayForDashboard}`;
+            const isCompleted = completedWorkouts[key] || false;
+
+            let badgeColor = workout.category === 'Run' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 
+                             workout.category === 'Strength' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 
+                             'bg-slate-700/50 text-slate-300 border-slate-600';
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${badgeColor}">${dayNames[selectedDayForDashboard]} • Minggu ${currentWeek}</span>
+                        <h4 class="font-bold text-base text-white mt-2">${workout.title}</h4>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-dark-800 border border-dark-700 text-slate-300">${workout.distance}</span>
+                </div>
+                <p class="text-xs text-slate-400 leading-relaxed">${workout.desc}</p>
+                <div class="flex items-center justify-between pt-3 border-t border-dark-800">
+                    <span class="text-xs text-slate-400">Status Latihan:</span>
+                    <button onclick="toggleWorkout('${key}')" class="px-4 py-2 rounded-xl text-xs font-semibold transition ${isCompleted ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-dark-800 hover:bg-dark-700 text-slate-300 border border-dark-700'}">
+                        ${isCompleted ? '✓ Selesai' : 'Tandai Selesai'}
+                    </button>
+                </div>
+            `;
+
+            if (dailyLogs[key]) {
+                document.getElementById('log-note').value = dailyLogs[key];
+            } else {
+                document.getElementById('log-note').value = '';
+            }
+        }
+
+        function toggleWorkout(key) {
+            completedWorkouts[key] = !completedWorkouts[key];
+            localStorage.setItem('hm_52w_completed', JSON.stringify(completedWorkouts));
+            updateDashboardCard();
+            renderScheduleWeek();
+            updateStats();
+            showToast();
+        }
+
+        function saveDailyLog() {
+            const key = `w${currentWeek}_d${selectedDayForDashboard}`;
+            const note = document.getElementById('log-note').value;
+            dailyLogs[key] = note;
+            localStorage.setItem('hm_52w_logs', JSON.stringify(dailyLogs));
+            showToast('Catatan disimpan!');
+        }
+
+        function renderScheduleWeek() {
+            const container = document.getElementById('week-days-list');
+            const banner = document.getElementById('week-info-banner');
+            let phase = getPhaseForWeek(currentWeek);
+
+            banner.innerHTML = `
+                <div>
+                    <div class="font-bold text-white">${phase.name}</div>
+                    <div class="text-slate-400">Target Easy Pace: ${phase.easy}</div>
+                </div>
+                <div class="text-right flex items-center space-x-1">
+                    <button onclick="changeWeekQuick(-1)" class="px-2.5 py-1 bg-dark-800 rounded-lg text-xs border border-dark-700 hover:bg-dark-700">◀</button>
+                    <button onclick="changeWeekQuick(1)" class="px-2.5 py-1 bg-dark-800 rounded-lg text-xs border border-dark-700 hover:bg-dark-700">▶</button>
+                </div>
+            `;
+
+            container.innerHTML = '';
+            // Order: Mon(1) to Sun(0)
+            const order = [1, 2, 3, 4, 5, 6, 0];
+            order.forEach(dayIdx => {
+                let workout = getWorkoutForDay(currentWeek, dayIdx);
+                let key = `w${currentWeek}_d${dayIdx}`;
+                let isCompleted = completedWorkouts[key] || false;
+
+                let badgeColor = workout.category === 'Run' ? 'text-indigo-400' : 
+                                 workout.category === 'Strength' ? 'text-emerald-400' : 'text-slate-400';
+
+                let div = document.createElement('div');
+                div.className = `bg-dark-900 border ${isCompleted ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-dark-800'} rounded-xl p-3.5 flex items-center justify-between transition`;
+                div.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleWorkout('${key}')" class="mt-1 w-4 h-4 rounded accent-emerald-500 cursor-pointer">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-white">${dayNames[dayIdx]}</span>
+                                <span class="text-[10px] font-semibold ${badgeColor}">${workout.category}</span>
+                            </div>
+                            <div class="text-xs font-medium text-slate-200 mt-0.5">${workout.title}</div>
+                            <div class="text-[11px] text-slate-400">${workout.desc}</div>
+                        </div>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-300 bg-dark-800 px-2.5 py-1 rounded-lg border border-dark-700">${workout.distance}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function changeWeekQuick(dir) {
+            let newW = currentWeek + dir;
+            if (newW >= 1 && newW <= 52) {
+                currentWeek = newW;
+                document.getElementById('week-selector').value = currentWeek;
+                switchWeek(currentWeek);
+            }
+        }
+
+        function updateStats() {
+            let total = 52 * 7; // 364 days
+            let completed = Object.values(completedWorkouts).filter(Boolean).length;
+            let percent = Math.round((completed / total) * 100);
+
+            document.getElementById('progress-percent').textContent = `${percent}%`;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('completed-count').textContent = `${completed} dari ${total} sesi selesai`;
+            document.getElementById('stat-completed').textContent = completed;
+            document.getElementById('stat-remaining').textContent = total - completed;
+            document.getElementById('streak-count').textContent = `🔥 ${completed} Selesai`;
+        }
+
+        function resetData() {
+            if (confirm('Reset seluruh checklist progress latihan?')) {
+                localStorage.removeItem('hm_52w_completed');
+                localStorage.removeItem('hm_52w_logs');
+                completedWorkouts = {};
+                dailyLogs = {};
+                updateDashboard();
+                renderScheduleWeek();
+                updateStats();
+                showToast('Progress direset!');
+            }
+        }
+
+        function showToast(msg = 'Tersimpan!') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+        }
     </script>
 </body>
 </html>
