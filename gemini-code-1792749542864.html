@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ad Meliora - HM 2:00 Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex justify-between items-center">
+        <div>
+            <h1 class="font-bold text-lg text-white flex items-center gap-2">
+                <i class="fa-solid fa-person-running text-blue-500"></i> Ad Meliora HM 2:00
+            </h1>
+            <p class="text-xs text-slate-400" id="header-date">Memuat tanggal...</p>
+        </div>
+        <div class="bg-blue-600/20 border border-blue-500/30 px-3 py-1 rounded-full text-blue-400 text-xs font-semibold">
+            Target: 2:00 (5:41/km)
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto p-4">
+
+        <!-- TAB 1: HARI INI (TODAY) -->
+        <div id="tab-today" class="tab-content active space-y-4">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg">
+                <div class="flex justify-between items-start mb-3">
+                    <span id="today-phase" class="bg-blue-500/20 text-blue-400 text-xs px-2.5 py-1 rounded-md font-medium">Fase 1: Fondasi</span>
+                    <span id="today-dayname" class="text-slate-400 text-sm font-semibold">Senin</span>
+                </div>
+                <h2 id="today-session" class="text-xl font-bold text-white mb-2">Strength Training A</h2>
+                <p id="today-details" class="text-slate-300 text-sm mb-4 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">Push-up/Bench 3x8; DB Row 3x8; Plank 3x45s.</p>
+                
+                <div class="grid grid-cols-2 gap-3 mb-4 text-xs">
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700">
+                        <span class="text-slate-400 block">Durasi / Volume</span>
+                        <span id="today-duration" class="font-semibold text-white text-sm">45-60 min</span>
+                    </div>
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700">
+                        <span class="text-slate-400 block">Target Jarak / Intensitas</span>
+                        <span id="today-intensity" class="font-semibold text-white text-sm">RPE 6-7</span>
+                    </div>
+                </div>
+
+                <!-- Checklist & Complete Button -->
+                <div class="flex items-center justify-between pt-3 border-t border-slate-700">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="today-checkbox" onchange="toggleTodayComplete()" class="w-5 h-5 accent-blue-600 rounded">
+                        <span class="text-sm font-medium text-slate-200">Selesai Latihan Hari Ini</span>
+                    </label>
+                    <span id="today-status" class="text-xs text-slate-400">Belum</span>
+                </div>
+            </div>
+
+            <!-- Daily Logger -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
+                <h3 class="font-semibold text-sm text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-blue-400"></i> Catat Hasil Latihan Anda
+                </h3>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Jarak Aktual (km) / Catatan</label>
+                    <input type="text" id="log-note" placeholder="Contoh: Selesai lancar, pace 7:15/km" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <button onclick="saveDailyLog()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl text-sm font-semibold transition">
+                    Simpan Catatan Hari Ini
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 2: JADWAL 45 MINGGU (SCHEDULE) -->
+        <div id="tab-schedule" class="tab-content space-y-4">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4">
+                <label class="text-xs text-slate-400 block mb-2 font-medium">Pilih Minggu Latihan (1 - 45)</label>
+                <select id="week-selector" onchange="loadWeekSchedule()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                    <!-- Javascript will populate weeks -->
+                </select>
+            </div>
+
+            <div id="week-days-container" class="space-y-3">
+                <!-- Days populated by JS -->
+            </div>
+        </div>
+
+        <!-- TAB 3: STATISTIK & PANDUAN (STATS & GUIDE) -->
+        <div id="tab-stats" class="tab-content space-y-4">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                <h3 class="font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-blue-400"></i> Statistik & Progres
+                </h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700">
+                        <span id="stat-completed" class="text-2xl font-bold text-blue-400">0</span>
+                        <span class="text-xs text-slate-400 block mt-1">Hari Selesai</span>
+                    </div>
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-700">
+                        <span id="stat-streak" class="text-2xl font-bold text-emerald-400">0</span>
+                        <span class="text-xs text-slate-400 block mt-1">Streak (Hari)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
+                <h3 class="font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-emerald-400"></i> Panduan Pace Latihan
+                </h3>
+                <ul class="text-xs space-y-2 text-slate-300">
+                    <li class="flex justify-between bg-slate-900 p-2.5 rounded-lg border border-slate-700">
+                        <span>Easy / Recovery Pace</span>
+                        <strong class="text-white">6:15 – 7:40 /km</strong>
+                    </li>
+                    <li class="flex justify-between bg-slate-900 p-2.5 rounded-lg border border-slate-700">
+                        <span>Tempo / Threshold</span>
+                        <strong class="text-white">5:30 – 6:35 /km</strong>
+                    </li>
+                    <li class="flex justify-between bg-slate-900 p-2.5 rounded-lg border border-slate-700">
+                        <span>Target Race Pace (HM)</span>
+                        <strong class="text-emerald-400">5:41 /km</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar for iPhone -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 px-6 py-3 flex justify-around items-center z-50 max-w-md mx-auto">
+        <button onclick="switchTab('today')" id="nav-today" class="flex flex-col items-center text-blue-500 transition">
+            <i class="fa-solid fa-calendar-day text-lg"></i>
+            <span class="text-[10px] mt-1 font-medium">Hari Ini</span>
+        </button>
+        <button onclick="switchTab('schedule')" id="nav-schedule" class="flex flex-col items-center text-slate-400 transition">
+            <i class="fa-solid fa-list-check text-lg"></i>
+            <span class="text-[10px] mt-1 font-medium">Jadwal</span>
+        </button>
+        <button onclick="switchTab('stats')" id="nav-stats" class="flex flex-col items-center text-slate-400 transition">
+            <i class="fa-solid fa-trophy text-lg"></i>
+            <span class="text-[10px] mt-1 font-medium">Statistik</span>
+        </button>
+    </nav>
+
+    <script>
+        // Program Start Date: October 26, 2026
+        const startDate = new Date(2026, 9, 26);
+        const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        
+        // Load data from localStorage
+        let savedProgress = JSON.parse(localStorage.getItem('hm_progress') || '{}');
+        let savedLogs = JSON.parse(localStorage.getItem('hm_logs') || '{}');
+
+        function getTodayIndex() {
+            const today = new Date();
+            const diffTime = today - startDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 ? diffDays : 0;
+        }
+
+        const currentDayIndex = getTodayIndex();
+        const currentWeekNum = Math.floor(currentDayIndex / 7) + 1;
+        const currentDayOfWeek = currentDayIndex % 7; // 0=Sun, 1=Mon, ...
+
+        function initApp() {
+            const todayDateObj = new Date();
+            document.getElementById('header-date').innerText = todayDateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            loadTodayData();
+            populateWeekSelector();
+            updateStats();
+        }
+
+        function getDayWorkout(weekNum, dayOfWeek) {
+            // dayOfWeek: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+            let phase = "Fase 1: Fondasi (2:45 -> 2:35)";
+            let easyPace = "7:10-7:40 /km";
+            let longDist = 8 + Math.floor((weekNum - 1) / 3);
+
+            if (weekNum > 12 && weekNum <= 23) {
+                phase = "Fase 2: Stamina (2:35 -> 2:20)";
+                easyPace = "6:40-7:15 /km";
+                longDist = 11 + Math.floor((weekNum - 13) / 3);
+            } else if (weekNum > 23 && weekNum <= 34) {
+                phase = "Fase 3: Threshold (2:20 -> 2:10)";
+                easyPace = "6:10-6:35 /km";
+                longDist = 14 + Math.floor((weekNum - 24) / 3);
+            } else if (weekNum > 34) {
+                phase = "Fase 4: Peak & Race (2:10 -> 2:00)";
+                easyPace = "5:41-6:00 /km";
+                longDist = 17 + Math.floor((weekNum - 35) / 3);
+            }
+
+            let workout = {};
+            if (dayOfWeek === 1) { // Senin (Puasa -> Strength A)
+                workout = { session: "Strength Training A (Upper & Core)", details: "Push-up/Bench 3x8; DB Row 3x8; Overhead Press 3x8; Plank 3x45s", duration: "45-60 min", dist: "—", intensity: "RPE 6-7", fasting: true };
+            } else if (dayOfWeek === 2) { // Selasa
+                let tDist = 4 + Math.floor((weekNum - 1) / 6);
+                workout = { session: "Easy Run / Tempo Intro", details: `Conversational run at ${easyPace} + 4x15s strides`, duration: `${30 + tDist * 5} min`, dist: `${tDist} km`, intensity: "RPE 3-4", fasting: false };
+            } else if (dayOfWeek === 3) { // Rabu
+                workout = { session: "Rest + Light Mobility", details: "15-20 min gentle stretching, foam rolling, active recovery", duration: "15-20 min", dist: "—", intensity: "RPE 1-2", fasting: false };
+            } else if (dayOfWeek === 4) { // Kamis (Puasa -> Strength B)
+                workout = { session: "Strength Training B (Lower & Posterior)", details: "Goblet Squat 3x8; RDL 3x8; Hip Thrust 3x10; Calf Raise 3x15", duration: "45-60 min", dist: "—", intensity: "RPE 6-7", fasting: true };
+            } else if (dayOfWeek === 5) { // Jumat
+                workout = { session: "Functional Strength & Mobility", details: "Split Squat 3x8/leg; Pull-up/Row 3x6-10; Core rotations", duration: "45-60 min", dist: "—", intensity: "RPE 6-7", fasting: false };
+            } else if (dayOfWeek === 6) { // Sabtu
+                workout = { session: "Long Easy Run", details: `Continuous aerobic long run at ${easyPace}`, duration: `${60 + longDist * 6} min`, dist: `${longDist} km`, intensity: "RPE 4-5", fasting: false };
+            } else { // Minggu
+                workout = { session: "Rest + Complete Recovery", details: "Complete rest or very light leisure walk", duration: "0-20 min", dist: "—", intensity: "RPE 1", fasting: false };
+            }
+            workout.phase = phase;
+            return workout;
+        }
+
+        function loadTodayData() {
+            const todayWorkout = getDayWorkout(currentWeekNum, currentDayOfWeek);
+            const dateKey = `day_${currentDayIndex}`;
+
+            document.getElementById('today-phase').innerText = todayWorkout.phase;
+            document.getElementById('today-dayname').innerText = `${dayNames[currentDayOfWeek]} (Minggu ${currentWeekNum})`;
+            document.getElementById('today-session').innerText = todayWorkout.session;
+            document.getElementById('today-details').innerText = todayWorkout.details;
+            document.getElementById('today-duration').innerText = todayWorkout.duration;
+            document.getElementById('today-intensity').innerText = `${todayWorkout.dist !== '—' ? 'Jarak: ' + todayWorkout.dist + ' | ' : ''} Intensitas: ${todayWorkout.intensity}`;
+
+            const isChecked = savedProgress[dateKey] || false;
+            document.getElementById('today-checkbox').checked = isChecked;
+            document.getElementById('today-status').innerText = isChecked ? "Selesai ✓" : "Belum";
+            document.getElementById('today-status').className = isChecked ? "text-xs text-emerald-400 font-semibold" : "text-xs text-slate-400";
+
+            if (savedLogs[dateKey]) {
+                document.getElementById('log-note').value = savedLogs[dateKey];
+            }
+        }
+
+        function toggleTodayComplete() {
+            const dateKey = `day_${currentDayIndex}`;
+            const isChecked = document.getElementById('today-checkbox').checked;
+            savedProgress[dateKey] = isChecked;
+            localStorage.setItem('hm_progress', JSON.stringify(savedProgress));
+            
+            document.getElementById('today-status').innerText = isChecked ? "Selesai ✓" : "Belum";
+            document.getElementById('today-status').className = isChecked ? "text-xs text-emerald-400 font-semibold" : "text-xs text-slate-400";
+            updateStats();
+        }
+
+        function saveDailyLog() {
+            const dateKey = `day_${currentDayIndex}`;
+            const note = document.getElementById('log-note').value;
+            savedLogs[dateKey] = note;
+            localStorage.setItem('hm_logs', JSON.stringify(savedLogs));
+            alert("Catatan latihan berhasil disimpan!");
+        }
+
+        function populateWeekSelector() {
+            const select = document.getElementById('week-selector');
+            for (let i = 1; i <= 45; i++) {
+                let opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = `Minggu ${i} ${i === currentWeekNum ? '(Minggu Ini)' : ''}`;
+                if (i === currentWeekNum) opt.selected = true;
+                select.appendChild(opt);
+            }
+            loadWeekSchedule();
+        }
+
+        function loadWeekSchedule() {
+            const selectedWeek = parseInt(document.getElementById('week-selector').value);
+            const container = document.getElementById('week-days-container');
+            container.innerHTML = '';
+
+            for (let d = 1; d <= 6; d++) { // Mon to Sat + Sun (0)
+                let dayIdx = d; // 1=Mon, 2=Tue, ..., 6=Sat, 0=Sun
+                let wObj = getDayWorkout(selectedWeek, dayIdx);
+                let div = document.createElement('div');
+                div.className = "bg-slate-900 border border-slate-700/80 p-3.5 rounded-xl space-y-1";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-blue-400">${dayNames[dayIdx]}</span>
+                        <span class="text-slate-400">${wObj.dist !== '—' ? wObj.dist : wObj.duration}</span>
+                    </div>
+                    <h4 class="font-semibold text-white text-sm">${wObj.session}</h4>
+                    <p class="text-xs text-slate-300">${wObj.details}</p>
+                `;
+                container.appendChild(div);
+            }
+            // Add Sunday (0)
+            let sunObj = getDayWorkout(selectedWeek, 0);
+            let divSun = document.createElement('div');
+            divSun.className = "bg-slate-900 border border-slate-700/80 p-3.5 rounded-xl space-y-1";
+            divSun.innerHTML = `
+                <div class="flex justify-between items-center text-xs">
+                    <span class="font-bold text-blue-400">Minggu</span>
+                    <span class="text-slate-400">${sunObj.duration}</span>
+                </div>
+                <h4 class="font-semibold text-white text-sm">${sunObj.session}</h4>
+                <p class="text-xs text-slate-300">${sunObj.details}</p>
+            `;
+            container.appendChild(divSun);
+        }
+
+        function updateStats() {
+            let completedCount = Object.values(savedProgress).filter(v => v === true).length;
+            document.getElementById('stat-completed').innerText = completedCount;
+            document.getElementById('stat-streak').innerText = completedCount; // Simplified streak counter
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(el => {
+                el.classList.remove('text-blue-500');
+                el.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            let btn = document.getElementById(`nav-${tabId}`);
+            btn.classList.remove('text-slate-400');
+            btn.classList.add('text-blue-500');
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
