@@ -3,26 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HM 52-Week Transition Dashboard (9:30 to 2:00)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>HM 52-Week Dashboard (10:00/km ke 2:00:00)</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        dark: {
-                            950: '#080c14',
-                            900: '#0f172a',
-                            800: '#1e293b',
-                            700: '#334155'
-                        },
-                        brand: {
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            400: '#60a5fa',
-                            accent: '#10b981'
-                        }
+                        dark: { 950: '#080c14', 900: '#0f172a', 800: '#1e293b', 700: '#334155' },
+                        brand: { 500: '#3b82f6', 600: '#2563eb', 400: '#60a5fa', accent: '#10b981' }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
@@ -35,6 +25,7 @@
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        input, select { -webkit-user-select: text; user-select: text; }
     </style>
 </head>
 <body class="bg-dark-950 text-slate-100 h-full flex flex-col justify-between selection:bg-brand-500 selection:text-white">
@@ -46,7 +37,7 @@
                 <i class="fa-solid fa-person-running text-white text-sm"></i>
             </div>
             <div>
-                <h1 class="font-bold text-sm tracking-tight text-white">HM 9:30 ➔ 2:00</h1>
+                <h1 class="font-bold text-sm tracking-tight text-white">HM 10:00 ➔ 2:00</h1>
                 <p class="text-xs text-slate-400" id="header-subtitle">Memuat data program...</p>
             </div>
         </div>
@@ -58,17 +49,15 @@
 
         <!-- TAB 1: TODAY'S WORKOUT -->
         <section id="tab-today" class="tab-content active space-y-4">
-            <!-- Banner -->
             <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-900 p-5 shadow-xl">
                 <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
                 <div class="relative z-10">
-                    <span id="banner-phase" class="inline-block px-2.5 py-1 rounded-full bg-black/20 text-emerald-300 text-xs font-semibold mb-2">Fase 1: Aerobic Base (9:30/km)</span>
-                    <h2 class="text-xl font-bold text-white mb-1">Konsistensi & Adaptasi</h2>
-                    <p class="text-xs text-blue-100 leading-relaxed">Senin & Kamis Strength Training saat puasa. Sabtu Long Run bertahap menuju target 2 jam!</p>
+                    <span id="banner-phase" class="inline-block px-2.5 py-1 rounded-full bg-black/20 text-emerald-300 text-xs font-semibold mb-2">Fase 1</span>
+                    <h2 id="banner-title" class="text-xl font-bold text-white mb-1">Konsistensi & Adaptasi</h2>
+                    <p id="banner-desc" class="text-xs text-blue-100 leading-relaxed"></p>
                 </div>
             </div>
 
-            <!-- Progress Card -->
             <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
                 <div class="flex justify-between items-center">
                     <h3 class="text-sm font-semibold text-slate-200">Progress 52 Minggu</h3>
@@ -78,41 +67,48 @@
                     <div id="progress-bar" class="bg-gradient-to-r from-brand-500 to-emerald-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between items-center text-xs text-slate-400">
-                    <span id="completed-count">0 dari 364 sesi selesai</span>
-                    <span id="streak-count">🔥 0 Hari Selesai</span>
+                    <span id="completed-count">0 sesi selesai</span>
+                    <span id="streak-count">🔥 0 hari beruntun</span>
                 </div>
             </div>
 
-            <!-- Day Selector & Workout Card -->
             <div class="space-y-2">
                 <div class="flex justify-between items-center">
                     <h3 class="text-sm font-semibold text-slate-200">Jadwal Sesi Latihan</h3>
                     <select id="select-day-picker" onchange="changeActiveDay(this.value)" class="bg-dark-800 border border-dark-700 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 outline-none font-medium">
                         <option value="1">Senin (Strength A - Puasa)</option>
-                        <option value="2">Selasa (Easy Run)</option>
-                        <option value="3">Rabu (Rest & Mobility)</option>
+                        <option value="2">Selasa (Easy / Quality Run)</option>
+                        <option value="3">Rabu (Rest / Easy Run)</option>
                         <option value="4">Kamis (Strength B - Puasa)</option>
-                        <option value="5">Jumat (Functional Strength)</option>
-                        <option value="6">Sabtu (Long Run)</option>
-                        <option value="0">Minggu (Rest Total)</option>
+                        <option value="5">Jumat (Easy Run)</option>
+                        <option value="6">Sabtu (Long Run / Tes)</option>
+                        <option value="0">Minggu (Rest Total / Lomba)</option>
                     </select>
                 </div>
-
-                <div id="today-card" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-4">
-                    <!-- Populated by JS -->
-                </div>
+                <div id="today-card" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-4"></div>
             </div>
 
             <!-- Logger Card -->
             <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
-                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-brand-400"></i> Catatan & Hasil Latihan
-                </h3>
-                <div>
-                    <input type="text" id="log-note" placeholder="Contoh: Selesai nyaman, pace rata-rata 9:25/km" class="w-full bg-dark-800 border border-dark-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-brand-500">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-brand-400"></i> Catat Hasil Latihan
+                    </h3>
+                    <a href="https://www.strava.com/dashboard" target="_blank" rel="noopener" class="text-[11px] font-semibold text-orange-400 bg-dark-800 border border-dark-700 px-2.5 py-1 rounded-lg">
+                        <i class="fa-brands fa-strava"></i> Buka Strava
+                    </a>
                 </div>
+                <div id="run-log-fields" class="space-y-2">
+                    <p class="text-[11px] text-slate-400">Salin angka dari aktivitas Strava kamu:</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" inputmode="decimal" id="log-dist" placeholder="Jarak km" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        <input type="text" id="log-time" placeholder="Waktu 1:02:10" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        <input type="text" inputmode="numeric" id="log-hr" placeholder="HR rata2" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                    </div>
+                </div>
+                <input type="text" id="log-note" placeholder="Catatan, contoh: nyaman, kaki berat di km 8" class="w-full bg-dark-800 border border-dark-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-brand-500">
                 <button onclick="saveDailyLog()" class="w-full bg-brand-600 hover:bg-brand-500 text-white py-2.5 rounded-xl text-xs font-semibold transition">
-                    Simpan Catatan Hari Ini
+                    Simpan Hasil Hari Ini
                 </button>
             </div>
         </section>
@@ -121,68 +117,68 @@
         <section id="tab-schedule" class="tab-content space-y-4">
             <div class="flex items-center justify-between">
                 <h2 class="text-base font-bold text-white">Jadwal 52 Minggu</h2>
-                <select id="week-selector" onchange="switchWeek(this.value)" class="bg-dark-800 border border-dark-700 text-xs text-slate-200 rounded-xl px-3 py-1.5 font-medium outline-none">
-                    <!-- Populated by JS -->
-                </select>
+                <select id="week-selector" onchange="switchWeek(this.value)" class="bg-dark-800 border border-dark-700 text-xs text-slate-200 rounded-xl px-3 py-1.5 font-medium outline-none"></select>
             </div>
-
-            <div id="week-info-banner" class="bg-dark-900 border border-dark-800 rounded-xl p-3 text-xs flex justify-between items-center">
-                <!-- Populated by JS -->
-            </div>
-
-            <div id="week-days-list" class="space-y-3">
-                <!-- Populated by JS -->
-            </div>
+            <div id="week-info-banner" class="bg-dark-900 border border-dark-800 rounded-xl p-3 text-xs flex justify-between items-center"></div>
+            <div id="week-days-list" class="space-y-3"></div>
         </section>
 
-        <!-- TAB 3: STATS & PACE ZONES -->
+        <!-- TAB 3: STATS, STRAVA BASELINE & PACE ZONES -->
         <section id="tab-stats" class="tab-content space-y-4">
             <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
                 <h2 class="text-base font-bold text-white">Statistik & Progres</h2>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-dark-800 p-3.5 rounded-xl border border-dark-700">
-                        <div class="text-slate-400 text-xs">Total Selesai</div>
+                        <div class="text-slate-400 text-xs">Sesi Selesai</div>
                         <div id="stat-completed" class="text-xl font-bold text-white mt-1">0</div>
                     </div>
                     <div class="bg-dark-800 p-3.5 rounded-xl border border-dark-700">
                         <div class="text-slate-400 text-xs">Sisa Sesi</div>
-                        <div id="stat-remaining" class="text-xl font-bold text-white mt-1">364</div>
+                        <div id="stat-remaining" class="text-xl font-bold text-white mt-1">0</div>
+                    </div>
+                    <div class="bg-dark-800 p-3.5 rounded-xl border border-dark-700">
+                        <div class="text-slate-400 text-xs">Jarak Tercatat</div>
+                        <div id="stat-km" class="text-xl font-bold text-white mt-1">0 km</div>
+                    </div>
+                    <div class="bg-dark-800 p-3.5 rounded-xl border border-dark-700">
+                        <div class="text-slate-400 text-xs">Lari Minggu Ini</div>
+                        <div id="stat-week-km" class="text-xl font-bold text-white mt-1">0 / 0 km</div>
                     </div>
                 </div>
             </div>
 
+            <div id="pace-profile" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3"></div>
+            <div id="strava-baseline" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3"></div>
+
+            <!-- Calibration -->
             <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-gauge-high text-emerald-400"></i> Panduan Progresi Pace
+                    <i class="fa-solid fa-bullseye text-emerald-400"></i> Cek Target & Kalibrasi Pace
                 </h3>
-                <div class="space-y-2 text-xs text-slate-300">
-                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
-                        <div class="font-bold text-brand-400 mb-0.5">Fase 1 (Minggu 1 - 13)</div>
-                        <div>Easy Pace: <strong class="text-white">9:00 - 9:30 /km</strong></div>
-                        <div class="text-slate-400 text-[11px] mt-1">Fokus membangun fondasi aerobik dasar dan adaptasi sendi.</div>
+                <div id="checkpoint-list" class="space-y-1.5 text-xs"></div>
+                <div class="pt-2 border-t border-dark-800 space-y-2">
+                    <p class="text-[11px] text-slate-400">Habis tes (lari all-out terkontrol) atau lomba? Masukkan hasilnya — pace seluruh sisa jadwal akan disesuaikan.</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="cal-type" class="bg-dark-800 border border-dark-700 text-xs text-slate-200 rounded-xl px-2.5 py-2 outline-none">
+                            <option value="5000">5 km</option>
+                            <option value="10000">10 km</option>
+                            <option value="15000">15 km</option>
+                            <option value="21097.5">Half Marathon</option>
+                        </select>
+                        <input type="text" id="cal-time" placeholder="Waktu mis. 31:45" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
                     </div>
-                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
-                        <div class="font-bold text-brand-400 mb-0.5">Fase 2 (Minggu 14 - 26)</div>
-                        <div>Easy Pace: <strong class="text-white">8:00 - 8:50 /km</strong></div>
-                        <div class="text-slate-400 text-[11px] mt-1">Peningkatan stamina kardiovaskular & jarak long run.</div>
-                    </div>
-                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
-                        <div class="font-bold text-brand-400 mb-0.5">Fase 3 (Minggu 27 - 39)</div>
-                        <div>Easy Pace: <strong class="text-white">7:00 - 7:50 /km</strong></div>
-                        <div class="text-slate-400 text-[11px] mt-1">Pengenalan tempo/threshold run & interval menengah.</div>
-                    </div>
-                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
-                        <div class="font-bold text-emerald-400 mb-0.5">Fase 4 (Minggu 40 - 52) - Target 2 Jam</div>
-                        <div>Easy Pace: <strong class="text-white">6:15 - 6:50 /km</strong> | Race Pace: <strong class="text-emerald-400">5:41 /km</strong></div>
-                        <div class="text-slate-400 text-[11px] mt-1">Simulasi lomba Half Marathon 2 jam & peak mileage 40-50 km/minggu.</div>
-                    </div>
+                    <button onclick="previewCalibration()" class="w-full bg-dark-800 border border-dark-700 text-slate-200 py-2.5 rounded-xl text-xs font-semibold">Hitung & Evaluasi</button>
+                    <div id="cal-result" class="text-xs text-slate-300"></div>
                 </div>
+                <div id="test-history" class="text-[11px] text-slate-400"></div>
             </div>
+
+            <div id="phase-guide" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3"></div>
         </section>
 
     </main>
 
-    <!-- Bottom Navigation Bar (iPhone PWA Style) -->
+    <!-- Bottom Navigation Bar -->
     <nav class="bg-dark-900/95 backdrop-blur-md fixed bottom-0 left-0 right-0 border-t border-dark-800 h-16 flex justify-around items-center z-50 px-2 max-w-md mx-auto">
         <button onclick="switchTab('today')" id="nav-today" class="flex flex-col items-center justify-center flex-1 py-1 text-brand-400 transition">
             <i class="fa-solid fa-calendar-day text-lg mb-1"></i>
@@ -198,86 +194,310 @@
         </button>
     </nav>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-xl opacity-0 pointer-events-none transition-all duration-300 z-50">
         Perubahan disimpan!
     </div>
 
-    <!-- Application Script -->
     <script>
-        // Start date: October 26, 2026
+        // =====================================================================
+        // KONSTANTA & DATA DASAR
+        // =====================================================================
+        // Minggu 1 dimulai Senin, 26 Oktober 2026 -> minggu 52 berakhir Minggu, 24 Oktober 2027 (hari lomba).
         const startDate = new Date(2026, 9, 26);
         const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-        
-        let completedWorkouts = JSON.parse(localStorage.getItem('hm_52w_completed')) || {};
-        let dailyLogs = JSON.parse(localStorage.getItem('hm_52w_logs')) || {};
-        
-        let currentWeek = 1;
-        let selectedDayForDashboard = getTodayDayOfWeek(); // Default to today's day of week
+        const dayShort = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+        const monthShort = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
-        function getTodayDayOfWeek() {
-            const today = new Date();
-            const diffTime = today - startDate;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays < 0) return 1; // Default Monday if before start
-            currentWeek = Math.floor(diffDays / 7) + 1;
-            if (currentWeek > 52) currentWeek = 52;
-            return today.getDay(); // 0=Sun, 1=Mon...
+        const HM_M = 21097.5;
+        const EASY_HR_CAP = 140;                          // batas atas HR untuk lari easy (Strava Z3 bawah)
+        const TESTS = { 13: 5000, 26: 10000, 39: 10000, 47: 15000 }; // minggu tes -> jarak tes (m)
+        const TEST_TOTAL_KM = { 5000: 8, 10000: 13, 15000: 18 };     // termasuk pemanasan & pendinginan
+        const PLAN_PEAK_WEEK = 49;                        // minggu terakhir sebelum taper
+
+        // Snapshot data Strava (diambil 26 Okt 2026) yang dipakai untuk kalibrasi awal.
+        const STRAVA = {
+            asOf: '26 Okt 2026',
+            hmBestSec: 9874,   // Best effort Half Marathon, 2 Agt 2026 (2:44:34)
+            hrZones: [['Z1', '< 108'], ['Z2', '108 - 124'], ['Z3', '125 - 143'], ['Z4', '144 - 161'], ['Z5', '162+']],
+            facts: [
+                ['Half marathon pertama (2 Agt 2026)', '2:46:39 (waktu bergerak) • best effort 2:44:34 • HR rata-rata 170'],
+                ['Split HM', '5K: 7:53 → 7:33 → 7:30/km, lalu 6,1 km terakhir melambat ke 8:20/km'],
+                ['Easy run sekarang', '9:26/km @ HR 130 (5K, 10 Okt) • 9:38/km @ HR 139 (12 km, 24 Okt)'],
+                ['Long run terakhir', '12 km @ 9:38/km, HR rata-rata 139 (24 Okt)'],
+                ['Volume 8 minggu terakhir', 'rata-rata ± 7 km/minggu (3 minggu terakhir: 5 → 10 → 18 km)'],
+                ['Strength terekam', '4 sesi dalam 8 minggu terakhir'],
+                ['HR maks terbaca', '184 (2 Agt) dan 179 (17 Okt) — zona Strava diset dari 178, jadi kemungkinan terlalu rendah ± 5 bpm'],
+                ['Berat badan (profil Strava)', '85 kg']
+            ]
+        };
+
+        // =====================================================================
+        // RUMUS VDOT (Daniels) — dipakai untuk menurunkan semua pace dari satu angka kemampuan
+        // =====================================================================
+        function vo2AtV(v) { return -4.60 + 0.182258 * v + 0.000104 * v * v; }          // v dalam m/menit
+        function pctMax(tMin) { return 0.8 + 0.1894393 * Math.exp(-0.012778 * tMin) + 0.2989558 * Math.exp(-0.1932605 * tMin); }
+        function vdotFromRace(distM, timeS) { const t = timeS / 60; return vo2AtV(distM / t) / pctMax(t); }
+        function raceTime(distM, V) {                                                    // detik, lewat bisection
+            let lo = 60, hi = 6 * 3600;
+            for (let i = 0; i < 60; i++) {
+                const mid = (lo + hi) / 2;
+                if (vdotFromRace(distM, mid) > V) lo = mid; else hi = mid;
+            }
+            return (lo + hi) / 2;
+        }
+        function paceAtPct(V, p) {                                                       // detik/km pada p% VO2max
+            const a = 0.000104, b = 0.182258, c = -4.60 - V * p;
+            const v = (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+            return 1000 / v * 60;
+        }
+        function fmtPace(sec) { const s = Math.round(sec); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+        function fmtTime(sec) {
+            const s = Math.round(sec), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+            return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}` : `${m}:${String(ss).padStart(2, '0')}`;
+        }
+        function fmtKm(x) { return (Math.round(x * 10) / 10).toString().replace('.', ','); }
+        function parseTimeInput(str) {
+            const parts = String(str || '').trim().split(':');
+            if (parts.length < 2 || parts.length > 3) return null;
+            const nums = parts.map(p => (/^\d+$/.test(p.trim()) ? parseInt(p, 10) : NaN));
+            if (nums.some(n => !Number.isFinite(n))) return null;
+            const [h, m, s] = nums.length === 3 ? nums : [0, nums[0], nums[1]];
+            if (m > 59 || s > 59) return null;
+            return h * 3600 + m * 60 + s;
         }
 
+        const V0 = vdotFromRace(HM_M, STRAVA.hmBestSec);   // ± 24,9 -> titik awal dari HM terakhir
+        const V_TARGET = vdotFromRace(HM_M, 7200);         // ± 36,5 -> yang dibutuhkan untuk HM 2:00:00
+        function ease(x) { return 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 1.2); } // gain awal lebih cepat, lalu melandai
+        function planVdot(w) { return V0 + (V_TARGET - V0) * ease(w / PLAN_PEAK_WEEK); } // kurva target dari baseline Strava
+
+        // =====================================================================
+        // PENYIMPANAN
+        // =====================================================================
+        function loadJSON(key, fallback) {
+            try {
+                const v = JSON.parse(localStorage.getItem(key));
+                return (v === null || v === undefined) ? fallback : v;
+            } catch (e) { return fallback; }
+        }
+        function saveJSON(key, val) {
+            try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+            catch (e) { showToast('Gagal menyimpan: penyimpanan penuh/diblokir'); return false; }
+        }
+        function asObject(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+
+        let completedWorkouts = asObject(loadJSON('hm_52w_completed', {}));
+        let dailyLogs = asObject(loadJSON('hm_52w_logs', {}));
+        let runLogs = asObject(loadJSON('hm_52w_runlogs', {}));
+        let testHistory = (() => { const t = loadJSON('hm_52w_tests', []); return Array.isArray(t) ? t : []; })();
+        let measured = (() => {
+            const m = asObject(loadJSON('hm_52w_measured', {}));
+            if (Number.isFinite(m.vdot) && m.vdot > 15 && m.vdot < 80 && Number.isInteger(m.week) && m.week >= 0 && m.week <= 52) return m;
+            return { vdot: V0, week: 0 };
+        })();
+
+        // =====================================================================
+        // TANGGAL & MINGGU
+        // =====================================================================
+        function sessionDate(week, dayIdx) {
+            const d = new Date(startDate);
+            d.setDate(d.getDate() + (week - 1) * 7 + (dayIdx === 0 ? 6 : dayIdx - 1));
+            return d;
+        }
+        function fmtDate(d) { return `${dayShort[d.getDay()]}, ${d.getDate()} ${monthShort[d.getMonth()]}`; }
+        function computeToday() {
+            const now = new Date();
+            const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const diff = Math.round((t0 - startDate) / 86400000);
+            if (diff < 0) return { week: 1, dow: 1, diff };
+            return { week: Math.min(52, Math.floor(diff / 7) + 1), dow: now.getDay(), diff };
+        }
+        const TODAY = computeToday();
+        let todayWeek = TODAY.week;
+        let currentWeek = todayWeek;
+        let selectedDayForDashboard = TODAY.dow;
+
+        // =====================================================================
+        // PACE & FASE
+        // =====================================================================
+        function effectiveVdot(w) {
+            const Vm = measured.vdot;
+            if (Vm >= V_TARGET) return Vm;
+            const span = Math.max(1, PLAN_PEAK_WEEK - measured.week);
+            return Vm + (V_TARGET - Vm) * ease((w - measured.week) / span);
+        }
+        function paceProfile(w) {
+            const V = effectiveVdot(w);
+            const hm = raceTime(HM_M, V) / (HM_M / 1000);
+            return {
+                V, hm,
+                easyLo: hm + 75, easyHi: hm + 150,
+                tempo: paceAtPct(V, 0.88), interval: paceAtPct(V, 0.98),
+                p10k: raceTime(10000, V) / 10, p5k: raceTime(5000, V) / 5
+            };
+        }
+
+        const PHASES = [
+            { id: 1, name: 'Fase 1: Aerobic Base', start: 1, end: 13, title: 'Bangun Fondasi Aerobik',
+              focus: '3 lari/minggu, semuanya easy. Patokan utama HR, bukan pace. Minggu ke-4 tiap blok sengaja lebih ringan.' },
+            { id: 2, name: 'Fase 2: Stamina & Efficiency', start: 14, end: 26, title: 'Tambah Volume & Efisiensi',
+              focus: 'Lari ke-4 masuk hari Rabu, long run memanjang, strides untuk efisiensi langkah.' },
+            { id: 3, name: 'Fase 3: Threshold & Stamina', start: 27, end: 39, title: 'Tempo & Interval',
+              focus: 'Hari Selasa jadi sesi kualitas (tempo/interval). Sesi lain tetap easy.' },
+            { id: 4, name: 'Fase 4: Peak & Race Specific', start: 40, end: 52, title: 'Pace Lomba & Taper',
+              focus: 'Latihan di pace HM, long run puncak 20 km, taper minggu 50-51, lomba Minggu 24 Okt 2027.' }
+        ];
         function getPhaseForWeek(w) {
-            if (w <= 13) return { name: 'Fase 1: Aerobic Base', easy: '9:00 - 9:30 /km', target: '2:45' };
-            if (w <= 26) return { name: 'Fase 2: Stamina & Efficiency', easy: '8:00 - 8:50 /km', target: '2:30' };
-            if (w <= 39) return { name: 'Fase 3: Threshold & Stamina', easy: '7:00 - 7:50 /km', target: '2:15' };
-            return { name: 'Fase 4: Peak & Race Specific', easy: '6:15 - 6:50 /km', target: '2:00 (5:41 /km)' };
+            const p = PHASES.find(x => w >= x.start && w <= x.end) || PHASES[3];
+            const prof = paceProfile(w);
+            const endWeek = Math.min(p.end, PLAN_PEAK_WEEK);
+            const target = p.id === 4 ? '2:00:00 (5:41 /km)' : fmtTime(raceTime(HM_M, effectiveVdot(endWeek)));
+            return { id: p.id, name: p.name, title: p.title, focus: p.focus, easy: `${fmtPace(prof.easyLo)} - ${fmtPace(prof.easyHi)} /km`, target };
+        }
+
+        // =====================================================================
+        // GENERATOR LATIHAN
+        // =====================================================================
+        function rnd(x) { return Math.round(x * 2) / 2; }                // pembulatan 0,5 km
+        function isCutback(w) { return w < 50 && w % 4 === 0 && !TESTS[w] && w !== 40; } // w40 tidak ringan: minggu 39 (tes) sudah ringan
+        function volFactor(w) { return isCutback(w) ? 0.75 : (TESTS[w] ? 0.85 : 1); }
+        function baseKm(w) {
+            if (w === 50) return { tue: 7, wed: 5, fri: 4, long: 14 };
+            if (w === 51) return { tue: 6, wed: 4, fri: 3, long: 10 };
+            const f = volFactor(w);
+            const g = f * (w === 14 ? 0.9 : 1);  // minggu 14: lari ke-4 masuk, lari lain dikurangi sedikit agar lonjakan volume ≤ 10%
+            return {
+                tue: rnd(Math.min(9, 4.5 + 0.12 * (w - 1)) * g),
+                wed: w >= 14 ? rnd(Math.min(7, 3 + 0.1 * (w - 14)) * f) : 0,
+                fri: rnd(Math.min(6, 3.5 + 0.05 * (w - 1)) * g),
+                long: rnd(Math.min(20, 9 + 0.29 * (w - 1)) * g)
+            };
+        }
+
+        const TEMPO_BLOCKS = ['2×8 menit', '2×10 menit', '3×8 menit', '3×10 menit', '2×15 menit', '20 menit non-stop', '25 menit non-stop'];
+        const INTERVAL_BLOCKS = ['5×3 menit', '6×3 menit', '5×4 menit', '6×4 menit', '5×5 menit', '4×6 menit'];
+        const P4_TUE = {
+            40: ['hm', '3×2 km'], 41: ['tempo', '3×10 menit'], 42: ['hm', '2×4 km'], 43: ['interval', '6×4 menit'],
+            45: ['hm', '3×3 km'], 46: ['tempo', '25 menit non-stop'], 49: ['hm', '2×5 km'], 50: ['hm', '4×1 km'], 51: ['hm', '3×1 km']
+        };
+        const P4_LONG = {
+            41: '2×3 km @ pace HM', 42: '2×4 km @ pace HM', 43: '3×3 km @ pace HM',
+            45: '2×5 km @ pace HM', 46: '3×4 km @ pace HM', 49: '8 km non-stop @ pace HM (simulasi lomba)'
+        };
+
+        function qualityDesc(kind, block, prof) {
+            if (kind === 'tempo') return `Pemanasan 10-15 menit easy → ${block} @ tempo ${fmtPace(prof.tempo)}/km (HR Z4 144-161), jog 2 menit antar blok → pendinginan 10 menit.`;
+            if (kind === 'interval') return `Pemanasan 15 menit → ${block} @ ${fmtPace(prof.interval)}/km (keras tapi terkontrol, HR Z4-Z5), jog 2 menit antar repetisi → pendinginan 10 menit.`;
+            return `Pemanasan 15 menit → ${block} @ pace HM ${fmtPace(prof.hm)}/km, jog 2-3 menit antar blok → pendinginan 10 menit.`;
+        }
+
+        function strengthA(w) {
+            if (w >= 52) return { type: 'Rest', title: 'Rest & Mobility Ringan', desc: 'Tidak ada strength minggu lomba. Peregangan ringan 10 menit.', distance: '—', km: 0, category: 'Rest' };
+            let sets = w <= 13 ? '3x8' : (w <= 39 ? '3x10' : '2x8');
+            if (w >= 50) sets = '2x8';
+            return { type: 'Strength', title: 'Strength A (Upper & Core) [Puasa]',
+                desc: `Push-up ${sets}, DB Row ${sets}, Plank 3x45 dtk. Intensitas ringan-sedang (RPE ≤ 7) karena puasa; stop sebelum gagal. Maks 30-35 menit.`,
+                distance: '—', km: 0, category: 'Strength' };
+        }
+        function strengthB(w) {
+            if (w >= 51) return { type: 'Rest', title: 'Rest & Mobility Ringan', desc: 'Taper: tidak ada strength kaki. Peregangan dinamis 10-15 menit.', distance: '—', km: 0, category: 'Rest' };
+            const heavy = w <= 26;
+            return { type: 'Strength', title: 'Strength B (Lower & Posterior) [Puasa]',
+                desc: heavy
+                    ? 'Goblet Squat 3x8, RDL 3x8, Calf Raise 3x15. Intensitas sedang; Jumat ada lari, jadi jangan sampai gagal.'
+                    : 'Goblet Squat 2x8, RDL 2x8, Calf Raise 3x12. Volume sengaja rendah karena Jumat ada lari & Sabtu long run.',
+                distance: '—', km: 0, category: 'Strength' };
         }
 
         function getWorkoutForDay(week, dayIndex) {
-            let phase = getPhaseForWeek(week);
-            
-            // Easy run distance progression (starts at 3-4km, peaks at 8-9km)
-            let easyDist = 3 + Math.floor((week - 1) * 0.11);
-            if (easyDist > 9) easyDist = 9;
+            const prof = paceProfile(week);
+            const km = baseKm(week);
+            const easy = `${fmtPace(prof.easyLo)}-${fmtPace(prof.easyHi)}/km`;
+            const easyNote = `Pace ${easy} atau HR ≤ ${EASY_HR_CAP}, pilih yang lebih santai (masih bisa ngobrol). Jika HR > ${EASY_HR_CAP + 5}, jalan 1 menit.`;
+            const phase = PHASES.find(x => week >= x.start && week <= x.end) || PHASES[3];
+            const testDist = TESTS[week];
+            const run = (type, title, desc, kmVal, category = 'Run') => ({ type, title, desc, distance: `${fmtKm(kmVal)} km`, km: kmVal, category });
 
-            // Long run distance progression (starts at 6km, peaks at 20km)
-            let longDist = 6 + Math.floor((week - 1) * 0.28);
-            if (longDist > 20) longDist = 20;
-
-            switch(dayIndex) {
-                case 1: // Senin
-                    return { type: 'Strength', title: 'Strength A (Upper & Core) [Puasa]', desc: 'Push-up 3x8, DB Row 3x8, Plank 3x45s.', distance: '—', category: 'Strength' };
-                case 2: // Selasa
-                    return { type: 'Run', title: `Easy Aerobic Run (${easyDist} km)`, desc: `Pase santai (${phase.easy}) menjaga denyut jantung zona 2.`, distance: `${easyDist} km`, category: 'Run' };
-                case 3: // Rabu
-                    return { type: 'Rest', title: 'Rest & Light Mobility', desc: 'Peregangan dinamis 15 menit & pemulihan aktif.', distance: '—', category: 'Rest' };
-                case 4: // Kamis
-                    return { type: 'Strength', title: 'Strength B (Lower & Posterior) [Puasa]', desc: 'Goblet Squat 3x8, RDL 3x8, Calf Raise 3x15.', distance: '—', category: 'Strength' };
-                case 5: // Jumat
-                    return { type: 'Strength', title: 'Functional Stability & Core', desc: 'Split Squat 3x8/leg, Bird-Dog, Core rotations.', distance: '—', category: 'Strength' };
-                case 6: // Sabtu
-                    return { type: 'LongRun', title: `Long Easy Run (${longDist} km)`, desc: 'Menu utama ketahanan akhir pekan. Pertahankan ritme stabil.', distance: `${longDist} km`, category: 'Run' };
-                case 0: // Minggu
-                    return { type: 'Rest', title: 'Rest & Complete Recovery', desc: 'Pemulihan total fisik & mental.', distance: '—', category: 'Rest' };
+            switch (dayIndex) {
+                case 1: return strengthA(week);
+                case 4: return strengthB(week);
+                case 0:
+                    if (week === 52) return run('Race', 'HARI LOMBA: Half Marathon 21,1 km', `Target 2:00:00 (pace 5:41/km). Mulai di 5:45-5:50 selama 3 km pertama, lalu stabil di 5:41. Minum di tiap pos. Jangan start lebih cepat dari rencana.`, 21.1);
+                    return { type: 'Rest', title: 'Rest & Complete Recovery', desc: 'Pemulihan total fisik & mental.', distance: '—', km: 0, category: 'Rest' };
+                case 2: { // Selasa
+                    if (week === 52) return run('Run', `Easy Run + Strides (${fmtKm(5)} km)`, `${easyNote} Tutup dengan 4×20 detik strides.`, 5);
+                    if (testDist) return run('Run', `Easy Run + Strides (${fmtKm(km.tue)} km)`, `Minggu tes: ${easyNote} Tutup dengan 4×20 detik strides.`, km.tue);
+                    if (phase.id === 1) return run('Run', `Easy Run (${fmtKm(km.tue)} km)`, easyNote, km.tue);
+                    if (phase.id === 2) return run('Run', `Easy Run + Strides (${fmtKm(km.tue)} km)`, `${easyNote} Akhiri dengan 6×20 detik strides (cepat tapi rileks), jalan 60 detik antar strides.`, km.tue);
+                    if (isCutback(week)) return run('Run', `Fartlek Ringan (${fmtKm(km.tue)} km)`, `Minggu pemulihan: easy dengan 6×1 menit lebih cepat (≈ tempo ${fmtPace(prof.tempo)}/km) diselingi 2 menit santai.`, km.tue);
+                    if (phase.id === 3) {
+                        const i = week - 27;
+                        if (i % 2 === 0) { const b = TEMPO_BLOCKS[Math.min(TEMPO_BLOCKS.length - 1, Math.floor(i / 2))]; return run('Quality', `Tempo Run (${fmtKm(km.tue)} km total)`, qualityDesc('tempo', b, prof), km.tue); }
+                        const b = INTERVAL_BLOCKS[Math.min(INTERVAL_BLOCKS.length - 1, Math.floor((i - 1) / 2))];
+                        return run('Quality', `Interval Run (${fmtKm(km.tue)} km total)`, qualityDesc('interval', b, prof), km.tue);
+                    }
+                    const q = P4_TUE[week];
+                    if (q) return run('Quality', `${q[0] === 'hm' ? 'HM-Pace Run' : (q[0] === 'tempo' ? 'Tempo Run' : 'Interval Run')} (${fmtKm(km.tue)} km total)`, qualityDesc(q[0], q[1], prof), km.tue);
+                    return run('Run', `Easy Run + Strides (${fmtKm(km.tue)} km)`, `${easyNote} Tutup dengan 4×20 detik strides.`, km.tue);
+                }
+                case 3: { // Rabu
+                    if (week >= 52 || week < 14) return { type: 'Rest', title: 'Rest & Light Mobility', desc: week === 52 ? 'Minggu lomba: istirahat, tidur cukup, isi karbohidrat.' : 'Peregangan dinamis 15 menit & pemulihan aktif.', distance: '—', km: 0, category: 'Rest' };
+                    return run('Run', `Easy Recovery Run (${fmtKm(km.wed)} km)`, `${easyNote} Ini lari pemulihan, jaga tetap pelan.`, km.wed);
+                }
+                case 5: { // Jumat
+                    if (week === 52) return { type: 'Rest', title: 'Rest Total', desc: 'Istirahat. Siapkan perlengkapan & nutrisi lomba.', distance: '—', km: 0, category: 'Rest' };
+                    if (testDist) return run('Run', `Shakeout Run (${fmtKm(3)} km)`, `Besok tes: lari sangat santai 3 km (${easy}), tanpa strides keras.`, 3);
+                    if (phase.id <= 2) return run('Run', `Easy Run (${fmtKm(km.fri)} km)`, `${easyNote} Lanjutkan 10 menit core (plank, bird-dog, dead bug).`, km.fri);
+                    return run('Run', `Easy Run + Strides (${fmtKm(km.fri)} km)`, `${easyNote} Tutup dengan 4×20 detik strides. Besok long run, jangan terlalu capek.`, km.fri);
+                }
+                case 6: { // Sabtu
+                    if (week === 52) return run('Run', `Shakeout (${fmtKm(3)} km)`, 'Lari 3 km sangat santai + 4 strides pendek. Makan malam karbohidrat, tidur lebih awal.', 3);
+                    if (testDist) {
+                        const label = testDist === 15000 ? '15 km' : `${testDist / 1000} km`;
+                        return run('Test', `TES ${label} (all-out terkontrol)`, `Pemanasan 15 menit easy + 4 strides → ${label} dengan usaha terbaik yang stabil (jangan start terlalu cepat) → pendinginan 10 menit. Catat hasilnya di tab Statistik → Kalibrasi.`, TEST_TOTAL_KM[testDist]);
+                    }
+                    let extra = '';
+                    if (phase.id === 3 && !isCutback(week)) extra = ` 3 km terakhir naikkan sedikit ke ±${fmtPace(prof.hm + 20)}/km.`;
+                    if (P4_LONG[week]) extra = ` Di tengah: ${P4_LONG[week]} (${fmtPace(prof.hm)}/km), sisanya easy.`;
+                    if (week >= 50) extra = week === 50 ? ' Taper: tetap santai, jangan ditambah.' : ' Taper: pendek & santai, kaki harus segar.';
+                    return run('LongRun', `Long Run (${fmtKm(km.long)} km)`, `Menu utama ketahanan akhir pekan. Pace ${easy} (HR ≤ ${EASY_HR_CAP}); bawa air, minum tiap 20-25 menit.${extra}`, km.long);
+                }
             }
         }
 
+        function weekRunKm(w) {
+            let t = 0;
+            [1, 2, 3, 4, 5, 6, 0].forEach(d => { t += getWorkoutForDay(w, d).km || 0; });
+            return Math.round(t * 10) / 10;
+        }
+        function totalTrainingSessions() {
+            let n = 0;
+            for (let w = 1; w <= 52; w++) [1, 2, 3, 4, 5, 6, 0].forEach(d => { if (getWorkoutForDay(w, d).category !== 'Rest') n++; });
+            return n;
+        }
+        const TOTAL_SESSIONS = totalTrainingSessions();
+
+        // =====================================================================
+        // TAMPILAN HARI INI
+        // =====================================================================
         window.onload = function() {
             initWeekSelector();
             updateDashboard();
             renderScheduleWeek();
-            updateStats();
+            renderStats();
         };
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-
             ['today', 'schedule', 'stats'].forEach(t => {
-                const btn = document.getElementById(`nav-${t}`);
-                btn.className = t === tabId 
-                    ? 'flex flex-col items-center justify-center flex-1 py-1 text-brand-400 transition' 
+                document.getElementById(`nav-${t}`).className = t === tabId
+                    ? 'flex flex-col items-center justify-center flex-1 py-1 text-brand-400 transition'
                     : 'flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition';
             });
+            if (tabId === 'today') { currentWeek = todayWeek; updateDashboard(); }
+            if (tabId === 'schedule') { document.getElementById('week-selector').value = currentWeek; renderScheduleWeek(); }
+            if (tabId === 'stats') renderStats();
             window.scrollTo(0, 0);
         }
 
@@ -285,32 +505,47 @@
             const selector = document.getElementById('week-selector');
             selector.innerHTML = '';
             for (let i = 1; i <= 52; i++) {
-                let phase = getPhaseForWeek(i);
-                let opt = document.createElement('option');
+                const phase = PHASES.find(x => i >= x.start && i <= x.end);
+                const tag = TESTS[i] ? ' • Tes' : (i === 52 ? ' • Lomba' : (isCutback(i) ? ' • Ringan' : ''));
+                const opt = document.createElement('option');
                 opt.value = i;
-                opt.textContent = `Minggu ${i} (${phase.name.split(':')[0]})`;
+                opt.textContent = `Minggu ${i} (Fase ${phase.id})${tag}`;
                 selector.appendChild(opt);
             }
             selector.value = currentWeek;
         }
 
-        function switchWeek(w) {
-            currentWeek = parseInt(w);
-            renderScheduleWeek();
-        }
-
-        function changeActiveDay(val) {
-            selectedDayForDashboard = parseInt(val);
-            updateDashboardCard();
-        }
+        function switchWeek(w) { currentWeek = parseInt(w); renderScheduleWeek(); }
+        function changeActiveDay(val) { selectedDayForDashboard = parseInt(val); updateDashboardCard(); }
 
         function updateDashboard() {
-            let phase = getPhaseForWeek(currentWeek);
-            document.getElementById('header-subtitle').textContent = `${phase.name} • Minggu ${currentWeek}/52`;
+            const phase = getPhaseForWeek(currentWeek);
+            document.getElementById('header-subtitle').textContent = `${phase.name.split(':')[0]} • Minggu ${currentWeek}/52`;
             document.getElementById('banner-phase').textContent = `${phase.name} (Easy: ${phase.easy})`;
+            document.getElementById('banner-title').textContent = phase.title;
+            document.getElementById('banner-desc').textContent = phase.focus;
             document.getElementById('select-day-picker').value = selectedDayForDashboard;
             updateDashboardCard();
             updateStats();
+        }
+
+        function runVerdict(workout, log, prof) {
+            if (!log || !(log.pace > 0)) return '';
+            const parts = [`${fmtKm(log.dist)} km • ${fmtPace(log.pace)}/km` + (log.hr ? ` • HR ${log.hr}` : '')];
+            let note = '';
+            if (workout.type === 'Run' || workout.type === 'LongRun') {
+                if (log.hr && log.hr > EASY_HR_CAP) note = `⚠ HR rata-rata di atas ${EASY_HR_CAP}. Pelankan agar tetap aerobik.`;
+                else if (log.pace < prof.easyLo - 15) note = '⚠ Lebih cepat dari rentang easy. Tahan, easy harus benar-benar easy.';
+                else note = '✓ Sesuai zona easy.';
+            } else if (workout.type === 'Quality') {
+                note = `Bandingkan dengan target: tempo ${fmtPace(prof.tempo)} • interval ${fmtPace(prof.interval)} • HM ${fmtPace(prof.hm)} /km.`;
+            } else if (workout.type === 'Test') {
+                const t = TESTS[currentWeek];
+                note = t ? 'Masukkan waktu tes di tab Statistik → Kalibrasi agar pace disesuaikan.' : '';
+            } else if (workout.type === 'Race') {
+                note = log.pace <= 341 ? '🎉 Target 2:00 tercapai!' : 'Catat hasilnya di Kalibrasi untuk target berikutnya.';
+            }
+            return `<div class="text-xs bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-slate-300"><div class="font-semibold text-white">Aktual: ${parts[0]}</div>${note ? `<div class="mt-0.5 text-slate-400">${note}</div>` : ''}</div>`;
         }
 
         function updateDashboardCard() {
@@ -318,20 +553,24 @@
             const workout = getWorkoutForDay(currentWeek, selectedDayForDashboard);
             const key = `w${currentWeek}_d${selectedDayForDashboard}`;
             const isCompleted = completedWorkouts[key] || false;
+            const prof = paceProfile(currentWeek);
+            const date = fmtDate(sessionDate(currentWeek, selectedDayForDashboard));
 
-            let badgeColor = workout.category === 'Run' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 
-                             workout.category === 'Strength' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 
-                             'bg-slate-700/50 text-slate-300 border-slate-600';
+            const badgeColor = workout.category === 'Run' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                : workout.category === 'Strength' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                : 'bg-slate-700/50 text-slate-300 border-slate-600';
 
             card.innerHTML = `
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${badgeColor}">${dayNames[selectedDayForDashboard]} • Minggu ${currentWeek}</span>
-                        <h4 class="font-bold text-base text-white mt-2">${workout.title}</h4>
+                        <p class="text-[10px] text-slate-500 mt-1.5">${date}</p>
+                        <h4 class="font-bold text-base text-white mt-1">${workout.title}</h4>
                     </div>
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-dark-800 border border-dark-700 text-slate-300">${workout.distance}</span>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-dark-800 border border-dark-700 text-slate-300 whitespace-nowrap">${workout.distance}</span>
                 </div>
                 <p class="text-xs text-slate-400 leading-relaxed">${workout.desc}</p>
+                ${runVerdict(workout, runLogs[key], prof)}
                 <div class="flex items-center justify-between pt-3 border-t border-dark-800">
                     <span class="text-xs text-slate-400">Status Latihan:</span>
                     <button onclick="toggleWorkout('${key}')" class="px-4 py-2 rounded-xl text-xs font-semibold transition ${isCompleted ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-dark-800 hover:bg-dark-700 text-slate-300 border border-dark-700'}">
@@ -340,16 +579,18 @@
                 </div>
             `;
 
-            if (dailyLogs[key]) {
-                document.getElementById('log-note').value = dailyLogs[key];
-            } else {
-                document.getElementById('log-note').value = '';
-            }
+            const isRun = workout.km > 0;
+            document.getElementById('run-log-fields').style.display = isRun ? 'block' : 'none';
+            const lg = runLogs[key];
+            document.getElementById('log-dist').value = lg ? String(lg.dist).replace('.', ',') : '';
+            document.getElementById('log-time').value = lg ? fmtTime(lg.timeS) : '';
+            document.getElementById('log-hr').value = lg && lg.hr ? lg.hr : '';
+            document.getElementById('log-note').value = dailyLogs[key] || '';
         }
 
         function toggleWorkout(key) {
             completedWorkouts[key] = !completedWorkouts[key];
-            localStorage.setItem('hm_52w_completed', JSON.stringify(completedWorkouts));
+            saveJSON('hm_52w_completed', completedWorkouts);
             updateDashboardCard();
             renderScheduleWeek();
             updateStats();
@@ -358,21 +599,54 @@
 
         function saveDailyLog() {
             const key = `w${currentWeek}_d${selectedDayForDashboard}`;
-            const note = document.getElementById('log-note').value;
-            dailyLogs[key] = note;
-            localStorage.setItem('hm_52w_logs', JSON.stringify(dailyLogs));
-            showToast('Catatan disimpan!');
+            const workout = getWorkoutForDay(currentWeek, selectedDayForDashboard);
+            dailyLogs[key] = document.getElementById('log-note').value;
+            saveJSON('hm_52w_logs', dailyLogs);
+
+            let msg = 'Catatan disimpan!';
+            if (workout.km > 0) {
+                const distRaw = document.getElementById('log-dist').value.trim();
+                const timeRaw = document.getElementById('log-time').value.trim();
+                const hrRaw = document.getElementById('log-hr').value.trim();
+                if (distRaw || timeRaw) {
+                    const dist = parseFloat(distRaw.replace(',', '.'));
+                    const timeS = parseTimeInput(timeRaw);
+                    if (!(dist > 0 && dist < 100) || !timeS) {
+                        showToast('Isi jarak (mis. 10,2) dan waktu (mis. 1:02:10)');
+                        return;
+                    }
+                    const hr = hrRaw ? parseInt(hrRaw, 10) : null;
+                    if (hrRaw && !(hr >= 60 && hr <= 230)) { showToast('HR tidak masuk akal (60-230)'); return; }
+                    runLogs[key] = { dist, timeS, pace: timeS / dist, hr };
+                    saveJSON('hm_52w_runlogs', runLogs);
+                    if (dist >= workout.km * 0.8) completedWorkouts[key] = true;
+                    saveJSON('hm_52w_completed', completedWorkouts);
+                    msg = 'Hasil latihan disimpan!';
+                } else if (runLogs[key]) {
+                    delete runLogs[key];
+                    saveJSON('hm_52w_runlogs', runLogs);
+                }
+            }
+            updateDashboardCard();
+            renderScheduleWeek();
+            updateStats();
+            showToast(msg);
         }
 
+        // =====================================================================
+        // TAMPILAN JADWAL
+        // =====================================================================
         function renderScheduleWeek() {
             const container = document.getElementById('week-days-list');
             const banner = document.getElementById('week-info-banner');
-            let phase = getPhaseForWeek(currentWeek);
+            const phase = getPhaseForWeek(currentWeek);
+            const tag = TESTS[currentWeek] ? '🧪 Minggu tes' : (currentWeek === 52 ? '🏁 Minggu lomba' : (isCutback(currentWeek) ? '🌿 Minggu ringan (-25%)' : (currentWeek >= 50 ? '📉 Taper' : '')));
 
             banner.innerHTML = `
                 <div>
                     <div class="font-bold text-white">${phase.name}</div>
-                    <div class="text-slate-400">Target Easy Pace: ${phase.easy}</div>
+                    <div class="text-slate-400">Easy: ${phase.easy}</div>
+                    <div class="text-slate-400">Total lari: <span class="text-white font-semibold">${fmtKm(weekRunKm(currentWeek))} km</span>${tag ? ` • ${tag}` : ''}</div>
                 </div>
                 <div class="text-right flex items-center space-x-1">
                     <button onclick="changeWeekQuick(-1)" class="px-2.5 py-1 bg-dark-800 rounded-lg text-xs border border-dark-700 hover:bg-dark-700">◀</button>
@@ -381,17 +655,14 @@
             `;
 
             container.innerHTML = '';
-            // Order: Mon(1) to Sun(0)
-            const order = [1, 2, 3, 4, 5, 6, 0];
-            order.forEach(dayIdx => {
-                let workout = getWorkoutForDay(currentWeek, dayIdx);
-                let key = `w${currentWeek}_d${dayIdx}`;
-                let isCompleted = completedWorkouts[key] || false;
+            [1, 2, 3, 4, 5, 6, 0].forEach(dayIdx => {
+                const workout = getWorkoutForDay(currentWeek, dayIdx);
+                const key = `w${currentWeek}_d${dayIdx}`;
+                const isCompleted = completedWorkouts[key] || false;
+                const badgeColor = workout.category === 'Run' ? 'text-indigo-400' : workout.category === 'Strength' ? 'text-emerald-400' : 'text-slate-400';
+                const lg = runLogs[key];
 
-                let badgeColor = workout.category === 'Run' ? 'text-indigo-400' : 
-                                 workout.category === 'Strength' ? 'text-emerald-400' : 'text-slate-400';
-
-                let div = document.createElement('div');
+                const div = document.createElement('div');
                 div.className = `bg-dark-900 border ${isCompleted ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-dark-800'} rounded-xl p-3.5 flex items-center justify-between transition`;
                 div.innerHTML = `
                     <div class="flex items-start space-x-3">
@@ -399,20 +670,22 @@
                         <div>
                             <div class="flex items-center space-x-2">
                                 <span class="text-xs font-bold text-white">${dayNames[dayIdx]}</span>
+                                <span class="text-[10px] text-slate-500">${fmtDate(sessionDate(currentWeek, dayIdx))}</span>
                                 <span class="text-[10px] font-semibold ${badgeColor}">${workout.category}</span>
                             </div>
                             <div class="text-xs font-medium text-slate-200 mt-0.5">${workout.title}</div>
                             <div class="text-[11px] text-slate-400">${workout.desc}</div>
+                            ${lg ? `<div class="text-[11px] text-emerald-400 mt-1">Aktual: ${fmtKm(lg.dist)} km • ${fmtPace(lg.pace)}/km${lg.hr ? ' • HR ' + lg.hr : ''}</div>` : ''}
                         </div>
                     </div>
-                    <span class="text-xs font-semibold text-slate-300 bg-dark-800 px-2.5 py-1 rounded-lg border border-dark-700">${workout.distance}</span>
+                    <span class="text-xs font-semibold text-slate-300 bg-dark-800 px-2.5 py-1 rounded-lg border border-dark-700 whitespace-nowrap ml-2">${workout.distance}</span>
                 `;
                 container.appendChild(div);
             });
         }
 
         function changeWeekQuick(dir) {
-            let newW = currentWeek + dir;
+            const newW = currentWeek + dir;
             if (newW >= 1 && newW <= 52) {
                 currentWeek = newW;
                 document.getElementById('week-selector').value = currentWeek;
@@ -420,28 +693,186 @@
             }
         }
 
-        function updateStats() {
-            let total = 52 * 7; // 364 days
-            let completed = Object.values(completedWorkouts).filter(Boolean).length;
-            let percent = Math.round((completed / total) * 100);
-
-            document.getElementById('progress-percent').textContent = `${percent}%`;
-            document.getElementById('progress-bar').style.width = `${percent}%`;
-            document.getElementById('completed-count').textContent = `${completed} dari ${total} sesi selesai`;
-            document.getElementById('stat-completed').textContent = completed;
-            document.getElementById('stat-remaining').textContent = total - completed;
-            document.getElementById('streak-count').textContent = `🔥 ${completed} Selesai`;
+        // =====================================================================
+        // STATISTIK
+        // =====================================================================
+        function computeStreak() {
+            // Hari beruntun sampai hari ini: hari istirahat dihitung lewat, sesi latihan harus selesai.
+            if (TODAY.diff < 0) return 0;
+            let streak = 0;
+            for (let off = TODAY.diff; off >= 0; off--) {
+                const w = Math.floor(off / 7) + 1;
+                if (w > 52) continue;
+                const dayIdx = [1, 2, 3, 4, 5, 6, 0][off % 7];
+                const wo = getWorkoutForDay(w, dayIdx);
+                if (wo.category === 'Rest') continue;
+                if (completedWorkouts[`w${w}_d${dayIdx}`]) streak++;
+                else if (off === TODAY.diff) continue; // hari ini boleh belum selesai
+                else break;
+            }
+            return streak;
         }
 
+        function updateStats() {
+            let completed = 0;
+            for (let w = 1; w <= 52; w++) [1, 2, 3, 4, 5, 6, 0].forEach(d => {
+                if (completedWorkouts[`w${w}_d${d}`] && getWorkoutForDay(w, d).category !== 'Rest') completed++;
+            });
+            const percent = Math.round((completed / TOTAL_SESSIONS) * 100);
+            document.getElementById('progress-percent').textContent = `${percent}%`;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('completed-count').textContent = `${completed} dari ${TOTAL_SESSIONS} sesi selesai`;
+            document.getElementById('stat-completed').textContent = completed;
+            document.getElementById('stat-remaining').textContent = TOTAL_SESSIONS - completed;
+            document.getElementById('streak-count').textContent = `🔥 ${computeStreak()} hari beruntun`;
+
+            let km = 0;
+            Object.values(runLogs).forEach(l => { if (l && l.dist > 0) km += l.dist; });
+            document.getElementById('stat-km').textContent = `${fmtKm(km)} km`;
+            let weekDone = 0;
+            [1, 2, 3, 4, 5, 6, 0].forEach(d => { const l = runLogs[`w${todayWeek}_d${d}`]; if (l && l.dist > 0) weekDone += l.dist; });
+            document.getElementById('stat-week-km').textContent = `${fmtKm(weekDone)} / ${fmtKm(weekRunKm(todayWeek))} km`;
+        }
+
+        function renderStats() {
+            updateStats();
+            const prof = paceProfile(todayWeek);
+
+            document.getElementById('pace-profile').innerHTML = `
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-gauge-high text-emerald-400"></i> Pace Latihan Minggu ${todayWeek}</h3>
+                <p class="text-[11px] text-slate-400">Diturunkan dari kemampuan saat ini (VDOT ${prof.V.toFixed(1)}). Berubah otomatis setiap kamu menyimpan hasil tes di Kalibrasi.</p>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Easy / Long</div><div class="font-bold text-white mt-0.5">${fmtPace(prof.easyLo)} - ${fmtPace(prof.easyHi)} /km</div><div class="text-[10px] text-slate-500">HR ≤ ${EASY_HR_CAP}</div></div>
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Tempo</div><div class="font-bold text-white mt-0.5">${fmtPace(prof.tempo)} /km</div><div class="text-[10px] text-slate-500">HR Z4 144-161</div></div>
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Interval</div><div class="font-bold text-white mt-0.5">${fmtPace(prof.interval)} /km</div><div class="text-[10px] text-slate-500">repetisi 3-6 menit</div></div>
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Pace HM sekarang</div><div class="font-bold text-emerald-400 mt-0.5">${fmtPace(prof.hm)} /km</div><div class="text-[10px] text-slate-500">≈ ${fmtTime(raceTime(HM_M, prof.V))} untuk 21,1 km</div></div>
+                </div>
+                <div class="text-[11px] text-slate-400">Target lomba: 5:41 /km = 2:00:00. Butuh VDOT ${V_TARGET.toFixed(1)} (kamu ${prof.V.toFixed(1)} untuk minggu ini).</div>
+            `;
+
+            document.getElementById('strava-baseline').innerHTML = `
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-brands fa-strava text-orange-400"></i> Baseline dari Strava (${STRAVA.asOf})</h3>
+                <div class="space-y-1.5 text-xs">
+                    ${STRAVA.facts.map(f => `<div class="bg-dark-800 border border-dark-700 rounded-xl p-2.5"><div class="text-slate-400 text-[11px]">${f[0]}</div><div class="text-slate-200 mt-0.5">${f[1]}</div></div>`).join('')}
+                </div>
+                <div class="text-[11px] text-slate-400">Zona HR Strava: ${STRAVA.hrZones.map(z => `${z[0]} ${z[1]}`).join(' • ')}</div>
+            `;
+
+            renderCheckpoints();
+            renderPhaseGuide();
+            renderTestHistory();
+        }
+
+        function renderCheckpoints() {
+            const rows = Object.keys(TESTS).map(Number).map(w => {
+                const dist = TESTS[w];
+                const label = dist === 15000 ? '15K' : `${dist / 1000}K`;
+                const pv = planVdot(w);
+                const need = fmtTime(raceTime(dist, pv));
+                const hmPred = fmtTime(raceTime(HM_M, pv));
+                const rec = testHistory.filter(t => t.week === w && t.distM === dist).slice(-1)[0];
+                const status = rec ? (rec.vdot >= pv - 0.7 ? '✓' : '△') : (w < todayWeek ? '—' : '');
+                return `<div class="flex justify-between items-center bg-dark-800 border border-dark-700 rounded-xl p-2.5">
+                    <div><div class="text-white font-semibold">Minggu ${w} • tes ${label}</div><div class="text-[10px] text-slate-400">${fmtDate(sessionDate(w, 6))} • setara HM ≈ ${hmPred}</div></div>
+                    <div class="text-right"><div class="text-emerald-400 font-bold">≤ ${need}</div>${rec ? `<div class="text-[10px] text-slate-300">hasil ${fmtTime(rec.timeS)} ${status}</div>` : ''}</div>
+                </div>`;
+            });
+            rows.push(`<div class="flex justify-between items-center bg-dark-800 border border-emerald-500/30 rounded-xl p-2.5">
+                <div><div class="text-white font-semibold">Minggu 52 • Lomba HM</div><div class="text-[10px] text-slate-400">${fmtDate(sessionDate(52, 0))} 2027</div></div>
+                <div class="text-emerald-400 font-bold">≤ 2:00:00</div></div>`);
+            document.getElementById('checkpoint-list').innerHTML = rows.join('');
+        }
+
+        function renderPhaseGuide() {
+            document.getElementById('phase-guide').innerHTML = `
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-route text-brand-400"></i> Panduan Progresi Fase</h3>
+                <div class="space-y-2 text-xs text-slate-300">
+                    ${PHASES.map(p => {
+                        const s = paceProfile(p.start), e = paceProfile(Math.min(p.end, PLAN_PEAK_WEEK));
+                        const peak = Math.max(...Array.from({ length: p.end - p.start + 1 }, (_, i) => weekRunKm(p.start + i)));
+                        const tgt = p.id === 4 ? '2:00:00' : fmtTime(raceTime(HM_M, e.V));
+                        return `<div class="bg-dark-800 p-3 rounded-xl border border-dark-700">
+                            <div class="font-bold ${p.id === 4 ? 'text-emerald-400' : 'text-brand-400'} mb-0.5">${p.name} (Minggu ${p.start} - ${p.end})</div>
+                            <div>Easy: <strong class="text-white">${fmtPace(s.easyLo)} - ${fmtPace(s.easyHi)}</strong> → <strong class="text-white">${fmtPace(e.easyLo)} - ${fmtPace(e.easyHi)} /km</strong></div>
+                            <div>Prediksi HM akhir fase: <strong class="text-white">${tgt}</strong> • puncak ${fmtKm(peak)} km/minggu</div>
+                            <div class="text-slate-400 text-[11px] mt-1">${p.focus}</div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function renderTestHistory() {
+            const el = document.getElementById('test-history');
+            if (!testHistory.length) { el.textContent = 'Belum ada hasil tes tersimpan.'; return; }
+            el.innerHTML = '<div class="font-semibold text-slate-300 mb-1">Riwayat kalibrasi</div>' + testHistory.slice(-6).reverse().map(t => {
+                const lbl = t.distM === 21097.5 ? 'HM' : `${t.distM / 1000}K`;
+                return `<div>Minggu ${t.week}: ${lbl} ${fmtTime(t.timeS)} → VDOT ${t.vdot.toFixed(1)}</div>`;
+            }).join('');
+        }
+
+        // =====================================================================
+        // KALIBRASI
+        // =====================================================================
+        let pendingCal = null;
+        function previewCalibration() {
+            const distM = parseFloat(document.getElementById('cal-type').value);
+            const t = parseTimeInput(document.getElementById('cal-time').value);
+            const out = document.getElementById('cal-result');
+            const minT = distM / 1000 * 150, maxT = distM / 1000 * 900; // 2:30 - 15:00 per km
+            if (!t || t < minT || t > maxT) {
+                pendingCal = null;
+                out.innerHTML = '<span class="text-amber-400">Waktu tidak valid. Pakai format m:ss atau h:mm:ss, contoh 31:45 atau 2:05:30.</span>';
+                return;
+            }
+            const V = vdotFromRace(distM, t);
+            const planV = planVdot(todayWeek);
+            const diff = V - planV;
+            const hmPred = fmtTime(raceTime(HM_M, V));
+            const planHm = fmtTime(raceTime(HM_M, planV));
+            let status;
+            if (diff >= -0.7) status = '<span class="text-emerald-400 font-semibold">✓ Sesuai atau di atas target minggu ini.</span>';
+            else if (diff >= -2) status = '<span class="text-amber-400 font-semibold">△ Sedikit tertinggal.</span> Jaga konsistensi; pace latihan akan disesuaikan ke kemampuan baru.';
+            else status = '<span class="text-red-400 font-semibold">▽ Tertinggal dari kurva target.</span> Pace latihan otomatis diturunkan. Jika di minggu 39 masih tertinggal, realistisnya lomba 2:00 digeser 8-12 minggu.';
+            pendingCal = { vdot: Math.round(V * 10) / 10, distM, timeS: t };
+            out.innerHTML = `
+                <div class="bg-dark-800 border border-dark-700 rounded-xl p-3 space-y-1">
+                    <div>VDOT: <strong class="text-white">${V.toFixed(1)}</strong> • prediksi HM: <strong class="text-white">${hmPred}</strong></div>
+                    <div class="text-slate-400">Target minggu ${todayWeek}: VDOT ${planV.toFixed(1)} (HM ≈ ${planHm})</div>
+                    <div>${status}</div>
+                    <div class="text-[10px] text-slate-500">Pakai hasil tes/lomba sungguhan, bukan lari santai, supaya angka tidak terlalu rendah.</div>
+                    <button onclick="applyCalibration()" class="w-full mt-1 bg-brand-600 text-white py-2 rounded-xl text-xs font-semibold">Simpan & Pakai Pace Baru</button>
+                </div>`;
+        }
+
+        function applyCalibration() {
+            if (!pendingCal) return;
+            measured = { vdot: pendingCal.vdot, week: todayWeek };
+            testHistory.push({ week: todayWeek, distM: pendingCal.distM, timeS: pendingCal.timeS, vdot: pendingCal.vdot, date: new Date().toISOString().slice(0, 10) });
+            saveJSON('hm_52w_measured', measured);
+            saveJSON('hm_52w_tests', testHistory);
+            pendingCal = null;
+            document.getElementById('cal-result').innerHTML = '';
+            document.getElementById('cal-time').value = '';
+            updateDashboard();
+            renderScheduleWeek();
+            renderStats();
+            showToast('Pace baru dipakai!');
+        }
+
+        // =====================================================================
+        // RESET & TOAST
+        // =====================================================================
         function resetData() {
-            if (confirm('Reset seluruh checklist progress latihan?')) {
-                localStorage.removeItem('hm_52w_completed');
-                localStorage.removeItem('hm_52w_logs');
-                completedWorkouts = {};
-                dailyLogs = {};
+            if (confirm('Reset SEMUA data program (checklist, hasil lari, catatan, riwayat kalibrasi)? Tidak bisa dibatalkan.')) {
+                ['hm_52w_completed', 'hm_52w_logs', 'hm_52w_runlogs', 'hm_52w_tests', 'hm_52w_measured'].forEach(k => {
+                    try { localStorage.removeItem(k); } catch (e) {}
+                });
+                completedWorkouts = {}; dailyLogs = {}; runLogs = {}; testHistory = [];
+                measured = { vdot: V0, week: 0 };
                 updateDashboard();
                 renderScheduleWeek();
-                updateStats();
+                renderStats();
                 showToast('Progress direset!');
             }
         }
@@ -450,7 +881,7 @@
             const toast = document.getElementById('toast');
             toast.textContent = msg;
             toast.style.opacity = '1';
-            setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+            setTimeout(() => { toast.style.opacity = '0'; }, 2200);
         }
     </script>
 </body>
