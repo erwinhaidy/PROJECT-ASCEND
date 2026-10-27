@@ -49,6 +49,7 @@
 
         <!-- TAB 1: TODAY'S WORKOUT -->
         <section id="tab-today" class="tab-content active space-y-4">
+            <div id="pause-notice"></div>
             <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-900 p-5 shadow-xl">
                 <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
                 <div class="relative z-10">
@@ -100,10 +101,11 @@
                 </div>
                 <div id="run-log-fields" class="space-y-2">
                     <p class="text-[11px] text-slate-400">Salin angka dari aktivitas Strava kamu:</p>
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="grid grid-cols-2 gap-2">
                         <input type="text" inputmode="decimal" id="log-dist" placeholder="Jarak km" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
                         <input type="text" id="log-time" placeholder="Waktu 1:02:10" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
-                        <input type="text" inputmode="numeric" id="log-hr" placeholder="HR rata2" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        <input type="text" inputmode="numeric" id="log-hr" placeholder="HR rata-rata" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        <input type="text" inputmode="numeric" id="log-hrmax" placeholder="HR maks (opsional)" class="bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
                     </div>
                 </div>
                 <input type="text" id="log-note" placeholder="Catatan, contoh: nyaman, kaki berat di km 8" class="w-full bg-dark-800 border border-dark-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-brand-500">
@@ -119,8 +121,37 @@
                 <h2 class="text-base font-bold text-white">Jadwal 52 Minggu</h2>
                 <select id="week-selector" onchange="switchWeek(this.value)" class="bg-dark-800 border border-dark-700 text-xs text-slate-200 rounded-xl px-3 py-1.5 font-medium outline-none"></select>
             </div>
+            <details class="bg-dark-900 border border-dark-800 rounded-xl p-3">
+                <summary class="text-xs font-semibold text-slate-300 cursor-pointer">⚙ Atur Jadwal (pause / geser / ulang minggu)</summary>
+                <div id="sched-settings" class="mt-3 space-y-3 text-xs text-slate-300"></div>
+            </details>
             <div id="week-info-banner" class="bg-dark-900 border border-dark-800 rounded-xl p-3 text-xs flex justify-between items-center"></div>
             <div id="week-days-list" class="space-y-3"></div>
+        </section>
+
+        <!-- TAB COACH: AI REVIEW, RINGKASAN, EFISIENSI, ZONA HR -->
+        <section id="tab-coach" class="tab-content space-y-4">
+            <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user-graduate text-emerald-400"></i> Coach AI</h2>
+                    <button id="coach-btn" onclick="requestCoach()" class="text-xs font-semibold bg-brand-600 text-white px-3 py-1.5 rounded-lg">Minta Review</button>
+                </div>
+                <p class="text-[11px] text-slate-400">Gemini membaca ringkasan latihanmu (jarak, pace, HR, catatan) lalu memberi review singkat ala pelatih. Data hanya dikirim saat kamu menekan tombol.</p>
+                <div id="coach-output" class="text-xs text-slate-300 leading-relaxed"></div>
+                <div id="coach-meta" class="text-[10px] text-slate-500"></div>
+                <details class="bg-dark-800 border border-dark-700 rounded-xl p-3">
+                    <summary class="text-xs font-semibold text-slate-300 cursor-pointer">Pengaturan Coach (API key & model)</summary>
+                    <div class="mt-2 space-y-2">
+                        <input type="password" id="gem-key" autocomplete="off" placeholder="Gemini API key" class="w-full bg-dark-900 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        <input type="text" id="gem-model" placeholder="Model (default gemini-flash-latest)" class="w-full bg-dark-900 border border-dark-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        <button onclick="saveGeminiSettings()" class="w-full bg-dark-900 border border-dark-700 text-slate-200 py-2 rounded-xl text-xs font-semibold">Simpan Pengaturan</button>
+                        <p class="text-[10px] text-slate-500">Key tersimpan hanya di perangkat ini dan tidak ikut file backup. Alias "-latest" otomatis pindah ke model Gemini terbaru; kalau ada error 404, isi nama model spesifik.</p>
+                    </div>
+                </details>
+            </div>
+            <div id="weekly-summary" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3"></div>
+            <div id="ef-card" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3"></div>
+            <div id="hr-card" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3"></div>
         </section>
 
         <!-- TAB 3: STATS, STRAVA BASELINE & PACE ZONES -->
@@ -174,6 +205,22 @@
             </div>
 
             <div id="phase-guide" class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3"></div>
+
+            <div class="bg-dark-900 border border-dark-800 rounded-2xl p-4 shadow-lg space-y-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-floppy-disk text-brand-400"></i> Data & Backup</h3>
+                <p id="backup-status" class="text-[11px] text-slate-400"></p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="downloadBackup()" class="bg-brand-600 text-white py-2.5 rounded-xl text-xs font-semibold">Unduh JSON</button>
+                    <button onclick="copyBackup()" class="bg-dark-800 border border-dark-700 text-slate-200 py-2.5 rounded-xl text-xs font-semibold">Salin ke Clipboard</button>
+                </div>
+                <label class="block w-full text-center bg-dark-800 border border-dark-700 text-slate-200 py-2.5 rounded-xl text-xs font-semibold cursor-pointer">
+                    Pulihkan dari File
+                    <input type="file" accept="application/json,.json" class="hidden" onchange="restoreFromFile(event)">
+                </label>
+                <textarea id="restore-text" rows="3" placeholder="Atau tempel isi backup di sini" class="w-full bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-[11px] text-white focus:outline-none focus:border-brand-500"></textarea>
+                <button onclick="restoreFromText()" class="w-full bg-dark-800 border border-dark-700 text-slate-200 py-2 rounded-xl text-xs font-semibold">Pulihkan dari Teks</button>
+                <p class="text-[10px] text-slate-500">Backup berisi checklist, hasil lari, kalibrasi, jadwal, dan HR maks. Gemini API key tidak ikut.</p>
+            </div>
         </section>
 
     </main>
@@ -186,7 +233,11 @@
         </button>
         <button onclick="switchTab('schedule')" id="nav-schedule" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
             <i class="fa-solid fa-list-check text-lg mb-1"></i>
-            <span class="text-[10px] font-medium">Jadwal 52W</span>
+            <span class="text-[10px] font-medium">Jadwal</span>
+        </button>
+        <button onclick="switchTab('coach')" id="nav-coach" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
+            <i class="fa-solid fa-user-graduate text-lg mb-1"></i>
+            <span class="text-[10px] font-medium">Coach</span>
         </button>
         <button onclick="switchTab('stats')" id="nav-stats" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
             <i class="fa-solid fa-chart-line text-lg mb-1"></i>
@@ -209,7 +260,6 @@
         const monthShort = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
         const HM_M = 21097.5;
-        const EASY_HR_CAP = 140;                          // batas atas HR untuk lari easy (Strava Z3 bawah)
         const TESTS = { 13: 5000, 26: 10000, 39: 10000, 47: 15000 }; // minggu tes -> jarak tes (m)
         const TEST_TOTAL_KM = { 5000: 8, 10000: 13, 15000: 18 };     // termasuk pemanasan & pendinginan
         const PLAN_PEAK_WEEK = 49;                        // minggu terakhir sebelum taper
@@ -226,7 +276,7 @@
                 ['Long run terakhir', '12 km @ 9:38/km, HR rata-rata 139 (24 Okt)'],
                 ['Volume 8 minggu terakhir', 'rata-rata ± 7 km/minggu (3 minggu terakhir: 5 → 10 → 18 km)'],
                 ['Strength terekam', '4 sesi dalam 8 minggu terakhir'],
-                ['HR maks terbaca', '184 (2 Agt) dan 179 (17 Okt) — zona Strava diset dari 178, jadi kemungkinan terlalu rendah ± 5 bpm'],
+                ['HR maks terbaca', '184 (2 Agt) dan 179 (17 Okt). Zona Strava saat ini diset dari 178; aplikasi ini memakai 184 (bisa diubah di tab Coach).'],
                 ['Berat badan (profil Strava)', '85 kg']
             ]
         };
@@ -286,36 +336,112 @@
         }
         function asObject(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
 
-        let completedWorkouts = asObject(loadJSON('hm_52w_completed', {}));
-        let dailyLogs = asObject(loadJSON('hm_52w_logs', {}));
-        let runLogs = asObject(loadJSON('hm_52w_runlogs', {}));
-        let testHistory = (() => { const t = loadJSON('hm_52w_tests', []); return Array.isArray(t) ? t : []; })();
-        let measured = (() => {
-            const m = asObject(loadJSON('hm_52w_measured', {}));
-            if (Number.isFinite(m.vdot) && m.vdot > 15 && m.vdot < 80 && Number.isInteger(m.week) && m.week >= 0 && m.week <= 52) return m;
+        const HRMAX_DEFAULT = 184;            // HR tertinggi yang terbaca di Strava (HM, 2 Agt 2026)
+        const GEMINI_MODEL_DEFAULT = 'gemini-flash-latest';
+        const WEEK_KEY = /^w([1-9]|[1-4]\d|5[0-2])_d[0-6]$/;
+
+        // Pembersih data: dipakai saat memuat dari penyimpanan DAN saat memulihkan backup.
+        function cleanCompleted(o) { const r = {}, src = asObject(o); Object.keys(src).forEach(k => { if (WEEK_KEY.test(k) && src[k] === true) r[k] = true; }); return r; }
+        function cleanLogs(o) { const r = {}, src = asObject(o); Object.keys(src).forEach(k => { if (WEEK_KEY.test(k) && typeof src[k] === 'string' && src[k].trim()) r[k] = src[k].slice(0, 500); }); return r; }
+        function cleanRunLogs(o) {
+            const r = {}, src = asObject(o);
+            Object.keys(src).forEach(k => {
+                if (!WEEK_KEY.test(k)) return;
+                const l = asObject(src[k]); const dist = Number(l.dist), timeS = Number(l.timeS);
+                if (!(dist > 0 && dist < 100) || !(timeS >= 60 && timeS <= 86400)) return;
+                const hr = (l.hr === null || l.hr === undefined || l.hr === '') ? NaN : Number(l.hr);
+                const hrM = (l.hrMax === null || l.hrMax === undefined || l.hrMax === '') ? NaN : Number(l.hrMax);
+                r[k] = { dist, timeS, pace: timeS / dist, hr: (hr >= 60 && hr <= 230) ? Math.round(hr) : null, hrMax: (hrM >= 60 && hrM <= 230) ? Math.round(hrM) : null };
+            });
+            return r;
+        }
+        function cleanTests(a) {
+            return (Array.isArray(a) ? a : []).filter(t => t && typeof t === 'object')
+                .map(t => ({ week: Math.round(Number(t.week)), distM: Number(t.distM), timeS: Number(t.timeS), vdot: Number(t.vdot), date: String(t.date || '').slice(0, 10) }))
+                .filter(t => t.week >= 0 && t.week <= 52 && t.distM > 0 && t.distM < 50000 && t.timeS > 0 && t.vdot > 15 && t.vdot < 80).slice(-60);
+        }
+        function cleanMeasured(m) {
+            m = asObject(m);
+            if (Number.isFinite(m.vdot) && m.vdot > 15 && m.vdot < 80 && Number.isInteger(m.week) && m.week >= 0 && m.week <= 52) return { vdot: m.vdot, week: m.week };
             return { vdot: V0, week: 0 };
-        })();
+        }
+        function cleanRestarts(a) {
+            const tmp = [];
+            (Array.isArray(a) ? a : []).forEach(x => {
+                x = asObject(x); const w = Math.round(Number(x.week));
+                if (w >= 1 && w <= 52 && /^\d{4}-\d{2}-\d{2}$/.test(String(x.monday))) { const d = parseISO(x.monday); if (!isNaN(d) && d.getDay() === 1) tmp.push({ week: w, monday: x.monday }); }
+            });
+            tmp.sort((p, q) => p.week - q.week);
+            const out = [];
+            tmp.forEach(x => { if (out.length && out[out.length - 1].week === x.week) out[out.length - 1] = x; else out.push(x); });
+            return out;
+        }
+        function cleanCoach(c) { c = asObject(c); return (typeof c.text === 'string' && c.text && Number.isFinite(c.ts)) ? { ts: c.ts, text: c.text.slice(0, 6000), model: String(c.model || '').slice(0, 60), week: Math.round(Number(c.week)) || 0 } : null; }
+        function cleanHrMax(v) { const n = Math.round(Number(v)); return (n >= 140 && n <= 220) ? n : HRMAX_DEFAULT; }
+
+        let completedWorkouts = cleanCompleted(loadJSON('hm_52w_completed', {}));
+        let dailyLogs = cleanLogs(loadJSON('hm_52w_logs', {}));
+        let runLogs = cleanRunLogs(loadJSON('hm_52w_runlogs', {}));
+        let testHistory = cleanTests(loadJSON('hm_52w_tests', []));
+        let measured = cleanMeasured(loadJSON('hm_52w_measured', {}));
+        let restarts = cleanRestarts(loadJSON('hm_52w_restarts', []));
+        let hrMax = cleanHrMax(loadJSON('hm_52w_hrmax', HRMAX_DEFAULT));
+        let coachCache = cleanCoach(loadJSON('hm_52w_coach', null));
+
+        // Zona HR dari % HR maks. Ini titik awal berbasis literatur, bukan hasil tes lab: validasi dengan talk test.
+        function hrZones(H = hrMax) {
+            const z1 = Math.round(H * 0.70), z2 = Math.round(H * 0.77), z3 = Math.round(H * 0.87), z4 = Math.round(H * 0.93);
+            return { max: H, z1Max: z1, z2Min: z1 + 1, z2Max: z2, z3Min: z2 + 1, z3Max: z3, z4Min: z3 + 1, z4Max: z4, z5Min: z4 + 1 };
+        }
+        function easyCap() { return hrZones().z2Max; }
+        function escapeHtml(v) { return String(v === null || v === undefined ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
         // =====================================================================
         // TANGGAL & MINGGU
         // =====================================================================
-        function sessionDate(week, dayIdx) {
-            const d = new Date(startDate);
-            d.setDate(d.getDate() + (week - 1) * 7 + (dayIdx === 0 ? 6 : dayIdx - 1));
-            return d;
+        function pad2(n) { return String(n).padStart(2, '0'); }
+        function toISO(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+        function parseISO(str) { const [y, m, d] = String(str).split('-').map(Number); return new Date(y, m - 1, d); }
+        function addDays(d, n) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
+        function mondayOf(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); const dow = x.getDay(); x.setDate(x.getDate() - (dow === 0 ? 6 : dow - 1)); return x; }
+        // Jadwal bisa digeser lewat "restart": minggu W dimulai pada Senin tertentu, minggu berikutnya mengikuti.
+        function weekStartWith(rs, w) {
+            let r = null;
+            for (const x of rs) { if (x.week <= w) r = x; }
+            if (r) return addDays(parseISO(r.monday), 7 * (w - r.week));
+            return addDays(startDate, 7 * (w - 1));
         }
+        function weekStart(w) { return weekStartWith(restarts, w); }
+        function sessionDate(week, dayIdx) { return addDays(weekStart(week), dayIdx === 0 ? 6 : dayIdx - 1); }
         function fmtDate(d) { return `${dayShort[d.getDay()]}, ${d.getDate()} ${monthShort[d.getMonth()]}`; }
+        function fmtDateFull(d) { return `${dayShort[d.getDay()]}, ${d.getDate()} ${monthShort[d.getMonth()]} ${d.getFullYear()}`; }
+        function raceDate() { return sessionDate(52, 0); }
+
         function computeToday() {
             const now = new Date();
             const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const diff = Math.round((t0 - startDate) / 86400000);
-            if (diff < 0) return { week: 1, dow: 1, diff };
-            return { week: Math.min(52, Math.floor(diff / 7) + 1), dow: now.getDay(), diff };
+            for (let w = 1; w <= 52; w++) {
+                const st = weekStart(w);
+                if (t0 >= st && t0 < addDays(st, 7)) return { status: 'active', week: w, dow: now.getDay(), date: t0 };
+            }
+            const first = weekStart(1);
+            if (t0 < first) return { status: 'pre', week: 1, dow: 1, next: first, date: t0 };
+            if (t0 >= addDays(weekStart(52), 7)) return { status: 'done', week: 52, dow: now.getDay(), date: t0 };
+            for (let w = 2; w <= 52; w++) { const st = weekStart(w); if (st > t0) return { status: 'pause', week: w, dow: 1, next: st, date: t0 }; }
+            return { status: 'done', week: 52, dow: now.getDay(), date: t0 };
         }
-        const TODAY = computeToday();
+        let slotCache = null;
+        function slotMap() {
+            if (slotCache) return slotCache;
+            const m = {};
+            for (let w = 1; w <= 52; w++) for (const d of [1, 2, 3, 4, 5, 6, 0]) m[toISO(sessionDate(w, d))] = { week: w, day: d };
+            slotCache = m; return m;
+        }
+        let TODAY = computeToday();
         let todayWeek = TODAY.week;
         let currentWeek = todayWeek;
         let selectedDayForDashboard = TODAY.dow;
+        function recomputeToday() { slotCache = null; TODAY = computeToday(); todayWeek = TODAY.week; currentWeek = todayWeek; selectedDayForDashboard = TODAY.dow; }
 
         // =====================================================================
         // PACE & FASE
@@ -345,7 +471,7 @@
             { id: 3, name: 'Fase 3: Threshold & Stamina', start: 27, end: 39, title: 'Tempo & Interval',
               focus: 'Hari Selasa jadi sesi kualitas (tempo/interval). Sesi lain tetap easy.' },
             { id: 4, name: 'Fase 4: Peak & Race Specific', start: 40, end: 52, title: 'Pace Lomba & Taper',
-              focus: 'Latihan di pace HM, long run puncak 20 km, taper minggu 50-51, lomba Minggu 24 Okt 2027.' }
+              focus: 'Latihan di pace HM, long run puncak 20 km, taper minggu 50-51, lalu lomba di minggu 52.' }
         ];
         function getPhaseForWeek(w) {
             const p = PHASES.find(x => w >= x.start && w <= x.end) || PHASES[3];
@@ -386,9 +512,10 @@
         };
 
         function qualityDesc(kind, block, prof) {
-            if (kind === 'tempo') return `Pemanasan 10-15 menit easy → ${block} @ tempo ${fmtPace(prof.tempo)}/km (HR Z4 144-161), jog 2 menit antar blok → pendinginan 10 menit.`;
-            if (kind === 'interval') return `Pemanasan 15 menit → ${block} @ ${fmtPace(prof.interval)}/km (keras tapi terkontrol, HR Z4-Z5), jog 2 menit antar repetisi → pendinginan 10 menit.`;
-            return `Pemanasan 15 menit → ${block} @ pace HM ${fmtPace(prof.hm)}/km, jog 2-3 menit antar blok → pendinginan 10 menit.`;
+            const z = hrZones();
+            if (kind === 'tempo') return `Pemanasan 10-15 menit easy → ${block} @ tempo ${fmtPace(prof.tempo)}/km (HR sekitar ${z.z4Min}-${z.z4Max}; pace jadi patokan, HR baru naik setelah 3-5 menit), jog 2 menit antar blok → pendinginan 10 menit.`;
+            if (kind === 'interval') return `Pemanasan 15 menit → ${block} @ ${fmtPace(prof.interval)}/km (keras tapi terkontrol; HR naik bertahap ke ${z.z4Min}-${z.z5Min}+, jangan kejar HR di awal repetisi), jog 2 menit antar repetisi → pendinginan 10 menit.`;
+            return `Pemanasan 15 menit → ${block} @ pace HM ${fmtPace(prof.hm)}/km (HR sekitar ${z.z4Min}-${z.z4Max}), jog 2-3 menit antar blok → pendinginan 10 menit.`;
         }
 
         function strengthA(w) {
@@ -413,7 +540,7 @@
             const prof = paceProfile(week);
             const km = baseKm(week);
             const easy = `${fmtPace(prof.easyLo)}-${fmtPace(prof.easyHi)}/km`;
-            const easyNote = `Pace ${easy} atau HR ≤ ${EASY_HR_CAP}, pilih yang lebih santai (masih bisa ngobrol). Jika HR > ${EASY_HR_CAP + 5}, jalan 1 menit.`;
+            const easyNote = `Pace ${easy} atau HR ≤ ${easyCap()}, pilih yang lebih santai. Patokan utama: masih bisa bicara kalimat penuh. Jika HR > ${easyCap() + 5}, jalan 1 menit.`;
             const phase = PHASES.find(x => week >= x.start && week <= x.end) || PHASES[3];
             const testDist = TESTS[week];
             const run = (type, title, desc, kmVal, category = 'Run') => ({ type, title, desc, distance: `${fmtKm(kmVal)} km`, km: kmVal, category });
@@ -460,7 +587,7 @@
                     if (phase.id === 3 && !isCutback(week)) extra = ` 3 km terakhir naikkan sedikit ke ±${fmtPace(prof.hm + 20)}/km.`;
                     if (P4_LONG[week]) extra = ` Di tengah: ${P4_LONG[week]} (${fmtPace(prof.hm)}/km), sisanya easy.`;
                     if (week >= 50) extra = week === 50 ? ' Taper: tetap santai, jangan ditambah.' : ' Taper: pendek & santai, kaki harus segar.';
-                    return run('LongRun', `Long Run (${fmtKm(km.long)} km)`, `Menu utama ketahanan akhir pekan. Pace ${easy} (HR ≤ ${EASY_HR_CAP}); bawa air, minum tiap 20-25 menit.${extra}`, km.long);
+                    return run('LongRun', `Long Run (${fmtKm(km.long)} km)`, `Menu utama ketahanan akhir pekan. Pace ${easy} (HR ≤ ${easyCap()}); bawa air, minum tiap 20-25 menit.${extra}`, km.long);
                 }
             }
         }
@@ -484,19 +611,22 @@
             initWeekSelector();
             updateDashboard();
             renderScheduleWeek();
+            renderScheduleSettings();
             renderStats();
+            renderCoach();
         };
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            ['today', 'schedule', 'stats'].forEach(t => {
+            ['today', 'schedule', 'coach', 'stats'].forEach(t => {
                 document.getElementById(`nav-${t}`).className = t === tabId
                     ? 'flex flex-col items-center justify-center flex-1 py-1 text-brand-400 transition'
                     : 'flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition';
             });
             if (tabId === 'today') { currentWeek = todayWeek; updateDashboard(); }
-            if (tabId === 'schedule') { document.getElementById('week-selector').value = currentWeek; renderScheduleWeek(); }
+            if (tabId === 'schedule') { document.getElementById('week-selector').value = currentWeek; renderScheduleWeek(); renderScheduleSettings(); }
+            if (tabId === 'coach') renderCoach();
             if (tabId === 'stats') renderStats();
             window.scrollTo(0, 0);
         }
@@ -518,34 +648,45 @@
         function switchWeek(w) { currentWeek = parseInt(w); renderScheduleWeek(); }
         function changeActiveDay(val) { selectedDayForDashboard = parseInt(val); updateDashboardCard(); }
 
+        function renderPauseNotice() {
+            const el = document.getElementById('pause-notice');
+            let html = '';
+            if (TODAY.status === 'pause') html = `⏸ Minggu pause. Latihan lanjut Senin ${fmtDateFull(TODAY.next)} (Minggu ${TODAY.week}).`;
+            else if (TODAY.status === 'pre') html = `Program mulai Senin ${fmtDateFull(TODAY.next)}.`;
+            else if (TODAY.status === 'done') html = '🏁 Program 52 minggu selesai. Terima kasih sudah konsisten!';
+            el.innerHTML = html ? `<div class="bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs rounded-xl p-3">${html}</div>` : '';
+        }
+
         function updateDashboard() {
             const phase = getPhaseForWeek(currentWeek);
             document.getElementById('header-subtitle').textContent = `${phase.name.split(':')[0]} • Minggu ${currentWeek}/52`;
             document.getElementById('banner-phase').textContent = `${phase.name} (Easy: ${phase.easy})`;
             document.getElementById('banner-title').textContent = phase.title;
-            document.getElementById('banner-desc').textContent = phase.focus;
+            document.getElementById('banner-desc').textContent = phase.focus + (phase.id === 4 ? ` Hari lomba: ${fmtDateFull(raceDate())}.` : '');
             document.getElementById('select-day-picker').value = selectedDayForDashboard;
+            renderPauseNotice();
             updateDashboardCard();
             updateStats();
         }
 
         function runVerdict(workout, log, prof) {
             if (!log || !(log.pace > 0)) return '';
-            const parts = [`${fmtKm(log.dist)} km • ${fmtPace(log.pace)}/km` + (log.hr ? ` • HR ${log.hr}` : '')];
+            const z = hrZones();
+            const head = `${fmtKm(log.dist)} km • ${fmtPace(log.pace)}/km` + (log.hr ? ` • HR ${log.hr}` : '') + (log.hrMax ? ` (maks ${log.hrMax})` : '');
             let note = '';
             if (workout.type === 'Run' || workout.type === 'LongRun') {
-                if (log.hr && log.hr > EASY_HR_CAP) note = `⚠ HR rata-rata di atas ${EASY_HR_CAP}. Pelankan agar tetap aerobik.`;
+                if (log.hr && log.hr > z.z2Max) note = `⚠ HR rata-rata ${log.hr} di atas batas easy (${z.z2Max}). Itu zona "abu-abu": terlalu berat untuk easy, terlalu ringan untuk sesi kualitas. Pelankan atau selingi jalan.`;
                 else if (log.pace < prof.easyLo - 15) note = '⚠ Lebih cepat dari rentang easy. Tahan, easy harus benar-benar easy.';
-                else note = '✓ Sesuai zona easy.';
+                else if (log.hr) note = '✓ HR di zona easy.';
+                else note = '✓ Sesuai rentang pace easy.';
             } else if (workout.type === 'Quality') {
-                note = `Bandingkan dengan target: tempo ${fmtPace(prof.tempo)} • interval ${fmtPace(prof.interval)} • HM ${fmtPace(prof.hm)} /km.`;
+                note = `Target: tempo ${fmtPace(prof.tempo)} • interval ${fmtPace(prof.interval)} • HM ${fmtPace(prof.hm)} /km. HR rata-rata sesi kualitas (termasuk pemanasan) wajar di ${z.z3Min}-${z.z4Max}.`;
             } else if (workout.type === 'Test') {
-                const t = TESTS[currentWeek];
-                note = t ? 'Masukkan waktu tes di tab Statistik → Kalibrasi agar pace disesuaikan.' : '';
+                note = TESTS[currentWeek] ? 'Masukkan waktu tes di tab Statistik → Kalibrasi agar pace disesuaikan.' : '';
             } else if (workout.type === 'Race') {
                 note = log.pace <= 341 ? '🎉 Target 2:00 tercapai!' : 'Catat hasilnya di Kalibrasi untuk target berikutnya.';
             }
-            return `<div class="text-xs bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-slate-300"><div class="font-semibold text-white">Aktual: ${parts[0]}</div>${note ? `<div class="mt-0.5 text-slate-400">${note}</div>` : ''}</div>`;
+            return `<div class="text-xs bg-dark-800 border border-dark-700 rounded-xl p-2.5 text-slate-300"><div class="font-semibold text-white">Aktual: ${head}</div>${note ? `<div class="mt-0.5 text-slate-400">${note}</div>` : ''}</div>`;
         }
 
         function updateDashboardCard() {
@@ -585,6 +726,7 @@
             document.getElementById('log-dist').value = lg ? String(lg.dist).replace('.', ',') : '';
             document.getElementById('log-time').value = lg ? fmtTime(lg.timeS) : '';
             document.getElementById('log-hr').value = lg && lg.hr ? lg.hr : '';
+            document.getElementById('log-hrmax').value = lg && lg.hrMax ? lg.hrMax : '';
             document.getElementById('log-note').value = dailyLogs[key] || '';
         }
 
@@ -600,7 +742,7 @@
         function saveDailyLog() {
             const key = `w${currentWeek}_d${selectedDayForDashboard}`;
             const workout = getWorkoutForDay(currentWeek, selectedDayForDashboard);
-            dailyLogs[key] = document.getElementById('log-note').value;
+            dailyLogs[key] = document.getElementById('log-note').value.slice(0, 500);
             saveJSON('hm_52w_logs', dailyLogs);
 
             let msg = 'Catatan disimpan!';
@@ -608,6 +750,7 @@
                 const distRaw = document.getElementById('log-dist').value.trim();
                 const timeRaw = document.getElementById('log-time').value.trim();
                 const hrRaw = document.getElementById('log-hr').value.trim();
+                const hrMaxRaw = document.getElementById('log-hrmax').value.trim();
                 if (distRaw || timeRaw) {
                     const dist = parseFloat(distRaw.replace(',', '.'));
                     const timeS = parseTimeInput(timeRaw);
@@ -616,20 +759,28 @@
                         return;
                     }
                     const hr = hrRaw ? parseInt(hrRaw, 10) : null;
-                    if (hrRaw && !(hr >= 60 && hr <= 230)) { showToast('HR tidak masuk akal (60-230)'); return; }
-                    runLogs[key] = { dist, timeS, pace: timeS / dist, hr };
+                    if (hrRaw && !(hr >= 60 && hr <= 230)) { showToast('HR rata-rata tidak masuk akal (60-230)'); return; }
+                    const hrM = hrMaxRaw ? parseInt(hrMaxRaw, 10) : null;
+                    if (hrMaxRaw && !(hrM >= 60 && hrM <= 230)) { showToast('HR maks tidak masuk akal (60-230)'); return; }
+                    if (hr && hrM && hrM < hr) { showToast('HR maks tidak boleh lebih kecil dari HR rata-rata'); return; }
+                    runLogs[key] = { dist, timeS, pace: timeS / dist, hr, hrMax: hrM };
                     saveJSON('hm_52w_runlogs', runLogs);
                     if (dist >= workout.km * 0.8) completedWorkouts[key] = true;
                     saveJSON('hm_52w_completed', completedWorkouts);
                     msg = 'Hasil latihan disimpan!';
+                    if (hrM && hrM > hrMax) {
+                        hrMax = hrM; saveJSON('hm_52w_hrmax', hrMax);
+                        msg = `HR maks diperbarui ke ${hrMax}; zona HR dihitung ulang.`;
+                    }
                 } else if (runLogs[key]) {
                     delete runLogs[key];
                     saveJSON('hm_52w_runlogs', runLogs);
                 }
             }
-            updateDashboardCard();
+            updateDashboard();
             renderScheduleWeek();
-            updateStats();
+            renderStats();
+            renderCoach();
             showToast(msg);
         }
 
@@ -697,17 +848,19 @@
         // STATISTIK
         // =====================================================================
         function computeStreak() {
-            // Hari beruntun sampai hari ini: hari istirahat dihitung lewat, sesi latihan harus selesai.
-            if (TODAY.diff < 0) return 0;
+            // Hari beruntun sampai hari ini: hari istirahat & minggu pause dilewati, sesi latihan harus selesai.
+            if (TODAY.status === 'pre') return 0;
+            const map = slotMap();
+            const todayISO = toISO(TODAY.date);
+            const first = weekStart(1);
             let streak = 0;
-            for (let off = TODAY.diff; off >= 0; off--) {
-                const w = Math.floor(off / 7) + 1;
-                if (w > 52) continue;
-                const dayIdx = [1, 2, 3, 4, 5, 6, 0][off % 7];
-                const wo = getWorkoutForDay(w, dayIdx);
+            for (let d = new Date(TODAY.date); d >= first; d = addDays(d, -1)) {
+                const slot = map[toISO(d)];
+                if (!slot) continue;
+                const wo = getWorkoutForDay(slot.week, slot.day);
                 if (wo.category === 'Rest') continue;
-                if (completedWorkouts[`w${w}_d${dayIdx}`]) streak++;
-                else if (off === TODAY.diff) continue; // hari ini boleh belum selesai
+                if (completedWorkouts[`w${slot.week}_d${slot.day}`]) streak++;
+                else if (toISO(d) === todayISO) continue;
                 else break;
             }
             return streak;
@@ -742,8 +895,8 @@
                 <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-gauge-high text-emerald-400"></i> Pace Latihan Minggu ${todayWeek}</h3>
                 <p class="text-[11px] text-slate-400">Diturunkan dari kemampuan saat ini (VDOT ${prof.V.toFixed(1)}). Berubah otomatis setiap kamu menyimpan hasil tes di Kalibrasi.</p>
                 <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Easy / Long</div><div class="font-bold text-white mt-0.5">${fmtPace(prof.easyLo)} - ${fmtPace(prof.easyHi)} /km</div><div class="text-[10px] text-slate-500">HR ≤ ${EASY_HR_CAP}</div></div>
-                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Tempo</div><div class="font-bold text-white mt-0.5">${fmtPace(prof.tempo)} /km</div><div class="text-[10px] text-slate-500">HR Z4 144-161</div></div>
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Easy / Long</div><div class="font-bold text-white mt-0.5">${fmtPace(prof.easyLo)} - ${fmtPace(prof.easyHi)} /km</div><div class="text-[10px] text-slate-500">HR ≤ ${easyCap()}</div></div>
+                    <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Tempo</div><div class="font-bold text-white mt-0.5">${fmtPace(prof.tempo)} /km</div><div class="text-[10px] text-slate-500">HR ${hrZones().z4Min}-${hrZones().z4Max}</div></div>
                     <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Interval</div><div class="font-bold text-white mt-0.5">${fmtPace(prof.interval)} /km</div><div class="text-[10px] text-slate-500">repetisi 3-6 menit</div></div>
                     <div class="bg-dark-800 p-3 rounded-xl border border-dark-700"><div class="text-slate-400">Pace HM sekarang</div><div class="font-bold text-emerald-400 mt-0.5">${fmtPace(prof.hm)} /km</div><div class="text-[10px] text-slate-500">≈ ${fmtTime(raceTime(HM_M, prof.V))} untuk 21,1 km</div></div>
                 </div>
@@ -755,12 +908,13 @@
                 <div class="space-y-1.5 text-xs">
                     ${STRAVA.facts.map(f => `<div class="bg-dark-800 border border-dark-700 rounded-xl p-2.5"><div class="text-slate-400 text-[11px]">${f[0]}</div><div class="text-slate-200 mt-0.5">${f[1]}</div></div>`).join('')}
                 </div>
-                <div class="text-[11px] text-slate-400">Zona HR Strava: ${STRAVA.hrZones.map(z => `${z[0]} ${z[1]}`).join(' • ')}</div>
+                <div class="text-[11px] text-slate-400">Zona HR Strava saat ini (manual, dari 178): ${STRAVA.hrZones.map(z => `${z[0]} ${z[1]}`).join(' • ')}</div>
             `;
 
             renderCheckpoints();
             renderPhaseGuide();
             renderTestHistory();
+            renderBackupStatus();
         }
 
         function renderCheckpoints() {
@@ -778,7 +932,7 @@
                 </div>`;
             });
             rows.push(`<div class="flex justify-between items-center bg-dark-800 border border-emerald-500/30 rounded-xl p-2.5">
-                <div><div class="text-white font-semibold">Minggu 52 • Lomba HM</div><div class="text-[10px] text-slate-400">${fmtDate(sessionDate(52, 0))} 2027</div></div>
+                <div><div class="text-white font-semibold">Minggu 52 • Lomba HM</div><div class="text-[10px] text-slate-400">${fmtDateFull(sessionDate(52, 0))}</div></div>
                 <div class="text-emerald-400 font-bold">≤ 2:00:00</div></div>`);
             document.getElementById('checkpoint-list').innerHTML = rows.join('');
         }
@@ -795,7 +949,7 @@
                             <div class="font-bold ${p.id === 4 ? 'text-emerald-400' : 'text-brand-400'} mb-0.5">${p.name} (Minggu ${p.start} - ${p.end})</div>
                             <div>Easy: <strong class="text-white">${fmtPace(s.easyLo)} - ${fmtPace(s.easyHi)}</strong> → <strong class="text-white">${fmtPace(e.easyLo)} - ${fmtPace(e.easyHi)} /km</strong></div>
                             <div>Prediksi HM akhir fase: <strong class="text-white">${tgt}</strong> • puncak ${fmtKm(peak)} km/minggu</div>
-                            <div class="text-slate-400 text-[11px] mt-1">${p.focus}</div>
+                            <div class="text-slate-400 text-[11px] mt-1">${p.focus}${p.id === 4 ? ` Hari lomba: ${fmtDateFull(raceDate())}.` : ''}</div>
                         </div>`;
                     }).join('')}
                 </div>
@@ -861,18 +1015,473 @@
         }
 
         // =====================================================================
+        // JADWAL: PAUSE / GESER / ULANG MINGGU
+        // =====================================================================
+        function schedBaseMonday() { return TODAY.status === 'active' ? mondayOf(TODAY.date) : weekStart(TODAY.week); }
+
+        function validateRestart(week, mondayISO) {
+            const d = parseISO(mondayISO);
+            if (isNaN(d)) return 'Tanggal tidak valid.';
+            if (week > 1) {
+                const earlier = restarts.filter(x => x.week < week);
+                const prevEnd = addDays(weekStartWith(earlier, week - 1), 7);
+                if (d < prevEnd) return `Terlalu awal: Minggu ${week - 1} baru selesai ${fmtDateFull(addDays(prevEnd, -1))}.`;
+            }
+            return null;
+        }
+
+        function applyRestart(week, mondayISO) {
+            const err = validateRestart(week, mondayISO);
+            if (err) { showToast(err); return false; }
+            const next = restarts.filter(x => x.week < week).concat([{ week, monday: mondayISO }]);
+            const raceAfter = addDays(weekStartWith(next, 52), 6);
+            if (!confirm(`Minggu ${week} dimulai Senin ${fmtDateFull(parseISO(mondayISO))}.\nTanggal lomba (Minggu 52): ${fmtDateFull(raceAfter)}.\n\nLanjutkan?`)) return false;
+            restarts = next;
+            saveJSON('hm_52w_restarts', restarts);
+            recomputeToday();
+            refreshAll();
+            showToast('Jadwal diperbarui');
+            return true;
+        }
+
+        function quickPause(n) {
+            if (TODAY.status === 'done') { showToast('Program sudah selesai'); return; }
+            applyRestart(TODAY.week, toISO(addDays(schedBaseMonday(), 7 * n)));
+        }
+        function repeatPrevious() {
+            if (TODAY.status === 'done') { showToast('Program sudah selesai'); return; }
+            applyRestart(Math.max(1, TODAY.week - 1), toISO(schedBaseMonday()));
+        }
+        function applyCustomRestart() {
+            const w = parseInt(document.getElementById('sched-week').value, 10);
+            const raw = document.getElementById('sched-date').value;
+            if (!(w >= 1 && w <= 52) || !raw) { showToast('Pilih minggu dan tanggal mulai'); return; }
+            applyRestart(w, toISO(mondayOf(parseISO(raw))));
+        }
+        function clearRestarts() {
+            if (!restarts.length) return;
+            if (!confirm('Kembalikan jadwal ke tanggal asli (mulai 26 Okt 2026)? Centang & hasil lari tetap tersimpan per nomor minggu.')) return;
+            restarts = [];
+            saveJSON('hm_52w_restarts', restarts);
+            recomputeToday();
+            refreshAll();
+            showToast('Jadwal dikembalikan');
+        }
+        function refreshAll() {
+            initWeekSelector();
+            updateDashboard();
+            renderScheduleWeek();
+            renderScheduleSettings();
+            renderStats();
+            renderCoach();
+        }
+
+        function renderScheduleSettings() {
+            const el = document.getElementById('sched-settings');
+            if (!el) return;
+            let statusLine;
+            if (TODAY.status === 'active') statusLine = `Sekarang: Minggu ${TODAY.week} (${fmtDate(weekStart(TODAY.week))} - ${fmtDate(addDays(weekStart(TODAY.week), 6))}).`;
+            else if (TODAY.status === 'pause') statusLine = `Sedang pause. Minggu ${TODAY.week} mulai ${fmtDateFull(TODAY.next)}.`;
+            else if (TODAY.status === 'pre') statusLine = `Program mulai ${fmtDateFull(TODAY.next)}.`;
+            else statusLine = 'Program 52 minggu sudah selesai.';
+            const off = TODAY.status === 'done' ? 'disabled' : '';
+            const weekOpts = Array.from({ length: 52 }, (_, i) => `<option value="${i + 1}" ${i + 1 === TODAY.week ? 'selected' : ''}>Minggu ${i + 1}</option>`).join('');
+            const list = restarts.map(r => `Minggu ${r.week} mulai ${fmtDate(parseISO(r.monday))}`).join(' • ');
+            const btn = 'bg-dark-800 border border-dark-700 text-slate-200 py-2 rounded-xl text-[11px] font-semibold';
+            el.innerHTML = `
+                <div>${statusLine}<br>Lomba (Minggu 52): <strong class="text-white">${fmtDateFull(raceDate())}</strong></div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button ${off} onclick="quickPause(1)" class="${btn}">Pause 1 minggu</button>
+                    <button ${off} onclick="quickPause(2)" class="${btn}">Pause 2 minggu</button>
+                    <button ${off} onclick="repeatPrevious()" class="${btn}">Ulang minggu lalu</button>
+                </div>
+                <div class="space-y-2">
+                    <div class="text-[11px] text-slate-400">Atau mulai minggu tertentu di tanggal tertentu (otomatis dibulatkan ke hari Senin):</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="sched-week" class="bg-dark-800 border border-dark-700 text-xs text-slate-200 rounded-xl px-2.5 py-2 outline-none">${weekOpts}</select>
+                        <input type="date" id="sched-date" value="${toISO(addDays(schedBaseMonday(), 7))}" class="bg-dark-800 border border-dark-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-brand-500">
+                    </div>
+                    <button onclick="applyCustomRestart()" class="w-full bg-brand-600 text-white py-2 rounded-xl text-xs font-semibold">Terapkan</button>
+                </div>
+                ${restarts.length ? `<div class="text-[11px] text-slate-400">Penyesuaian aktif: ${list}</div><button onclick="clearRestarts()" class="w-full ${btn}">Kembalikan jadwal asli</button>` : ''}
+                <p class="text-[10px] text-slate-500">Pause = minggu yang sedang berjalan diulang setelah jeda. Checklist dan hasil lari tersimpan per nomor minggu latihan, bukan per tanggal.</p>`;
+        }
+
+        // =====================================================================
+        // RINGKASAN MINGGUAN & EFISIENSI AEROBIK
+        // =====================================================================
+        function r1(x) { return Math.round(x * 10) / 10; }
+        function dayOrder(d) { return d === 0 ? 6 : d - 1; }
+        function weekStats(w) {
+            const st = { w, planned: weekRunKm(w), actual: 0, easyKm: 0, modKm: 0, hardKm: 0, done: 0, plannedSess: 0 };
+            [1, 2, 3, 4, 5, 6, 0].forEach(d => {
+                const wo = getWorkoutForDay(w, d);
+                if (wo.category !== 'Rest') { st.plannedSess++; if (completedWorkouts[`w${w}_d${d}`]) st.done++; }
+                const l = runLogs[`w${w}_d${d}`];
+                if (l && l.dist > 0 && wo.km > 0) {
+                    st.actual += l.dist;
+                    if (['Quality', 'Test', 'Race'].includes(wo.type)) st.hardKm += l.dist;
+                    else if (l.hr && l.hr > easyCap()) st.modKm += l.dist;
+                    else st.easyKm += l.dist;
+                }
+            });
+            return st;
+        }
+
+        function renderWeeklySummary() {
+            const el = document.getElementById('weekly-summary');
+            const rows = [];
+            for (let w = Math.max(1, todayWeek - 3); w <= todayWeek; w++) rows.push(weekStats(w));
+            let totE = 0, totM = 0, totH = 0;
+            const body = rows.map((r, i) => {
+                totE += r.easyKm; totM += r.modKm; totH += r.hardKm;
+                const prev = i > 0 ? rows[i - 1].actual : 0;
+                const jump = prev > 0 && r.actual > prev * 1.10 + 1 ? `<span class="text-amber-400"> ⚠ +${Math.round((r.actual / prev - 1) * 100)}%</span>` : '';
+                return `<div class="flex justify-between items-center bg-dark-800 border border-dark-700 rounded-xl p-2.5">
+                    <div><div class="text-white font-semibold">Minggu ${r.w}${r.w === todayWeek ? ' (sekarang)' : ''}</div><div class="text-[10px] text-slate-400">${r.done}/${r.plannedSess} sesi selesai</div></div>
+                    <div class="text-right"><div class="text-slate-200">${fmtKm(r.actual)} / ${fmtKm(r.planned)} km${jump}</div></div>
+                </div>`;
+            }).join('');
+            const tot = totE + totM + totH;
+            let dist = '<div class="text-[11px] text-slate-400">Belum ada hasil lari tercatat untuk dihitung distribusinya.</div>';
+            if (tot > 0) {
+                const pe = Math.round(totE / tot * 100), pm = Math.round(totM / tot * 100), ph = 100 - pe - pm;
+                const warn = pm >= 15 ? '<div class="text-amber-400 mt-1">⚠ Banyak lari easy yang HR-nya di atas batas easy (zona abu-abu). Pelankan.</div>' : (pe < 70 ? '<div class="text-amber-400 mt-1">Porsi easy di bawah ±75-80%.</div>' : '<div class="text-emerald-400 mt-1">✓ Distribusi sehat (mayoritas easy).</div>');
+                dist = `<div class="text-[11px] text-slate-300">Distribusi jarak ${rows.length} minggu: easy <strong class="text-white">${pe}%</strong> • HR di atas batas easy <strong class="text-white">${pm}%</strong> • keras <strong class="text-white">${ph}%</strong>${warn}</div>`;
+            }
+            el.innerHTML = `
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-brand-400"></i> Ringkasan Mingguan</h3>
+                <div class="space-y-1.5 text-xs">${body}</div>
+                ${dist}
+                <p class="text-[10px] text-slate-500">Patokan umum: kenaikan volume mingguan ≤ ±10%. Tanda ⚠ muncul jika naik lebih dari itu.</p>`;
+        }
+
+        const EF_REF_HR = 135;
+        const EF_BASELINE = [
+            { order: -2, label: '10 Okt', dist: 5.0, timeS: 2826, hr: 130 },    // Strava: 5 km @ 9:26/km
+            { order: -1, label: '24 Okt', dist: 12.045, timeS: 6963, hr: 139 }  // Strava: 12 km @ 9:38/km
+        ];
+        function efOf(dist, timeS, hr) { return (dist * 1000 / (timeS / 60)) / hr; }          // m/menit per bpm
+        function paceAtHr(ef, hr) { return 1000 / (ef * hr) * 60; }                              // detik/km
+        function efficiencyPoints() {
+            const pts = EF_BASELINE.map(b => ({ order: b.order, label: b.label, ef: efOf(b.dist, b.timeS, b.hr), base: true }));
+            Object.keys(runLogs).forEach(key => {
+                const m = WEEK_KEY.exec(key); if (!m) return;
+                const w = parseInt(m[1], 10), d = parseInt(key.slice(-1), 10), l = runLogs[key];
+                if (!l || !l.hr || l.dist < 3) return;
+                const wo = getWorkoutForDay(w, d);
+                if (wo.type !== 'Run' && wo.type !== 'LongRun') return;
+                if (l.hr > easyCap() + 5) return;                                                // sesi non-easy tidak dibandingkan
+                pts.push({ order: w * 7 + dayOrder(d), label: fmtDate(sessionDate(w, d)), ef: efOf(l.dist, l.timeS, l.hr), base: false });
+            });
+            pts.sort((a, b) => a.order - b.order);
+            return pts;
+        }
+        function efSummary(pts) {
+            if (pts.length < 4) return null;
+            const avg = arr => arr.reduce((a, p) => a + p.ef, 0) / arr.length;
+            const first = avg(pts.slice(0, 3)), last = avg(pts.slice(-3));
+            return { first: paceAtHr(first, EF_REF_HR), last: paceAtHr(last, EF_REF_HR), pct: (last / first - 1) * 100 };
+        }
+        function renderEfCard() {
+            const el = document.getElementById('ef-card');
+            const pts = efficiencyPoints().slice(-24);
+            let chart = '<div class="text-[11px] text-slate-400">Butuh minimal 2 titik.</div>';
+            if (pts.length >= 2) {
+                const W = 300, H = 110, pad = 8;
+                const vals = pts.map(p => p.ef); const lo = Math.min(...vals), hi = Math.max(...vals), span = (hi - lo) || 0.01;
+                const xy = pts.map((p, i) => [pad + i * (W - 2 * pad) / (pts.length - 1), H - pad - (p.ef - lo) / span * (H - 2 * pad)]);
+                const line = xy.map(c => c.map(v => v.toFixed(1)).join(',')).join(' ');
+                const dots = xy.map((c, i) => `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="3.5" fill="${pts[i].base ? 'none' : '#10b981'}" stroke="${pts[i].base ? '#94a3b8' : '#10b981'}" stroke-width="1.5"/>`).join('');
+                chart = `<svg viewBox="0 0 ${W} ${H}" class="w-full h-28" role="img" aria-label="Grafik efisiensi aerobik"><polyline points="${line}" fill="none" stroke="#3b82f6" stroke-width="2"/>${dots}</svg>
+                    <div class="flex justify-between text-[10px] text-slate-500"><span>${pts[0].label}</span><span>${pts[pts.length - 1].label}</span></div>`;
+            }
+            const sm = efSummary(efficiencyPoints());
+            const summary = sm
+                ? `<div class="text-xs text-slate-300">Pace estimasi di HR ${EF_REF_HR}: <strong class="text-white">${fmtPace(sm.first)}</strong> → <strong class="${sm.pct >= 0 ? 'text-emerald-400' : 'text-amber-400'}">${fmtPace(sm.last)}</strong> /km (${sm.pct >= 0 ? '+' : ''}${sm.pct.toFixed(1)}% efisiensi)</div>`
+                : '<div class="text-xs text-slate-400">Catat jarak, waktu, dan HR rata-rata di lari easy. Setelah beberapa sesi, tren muncul di sini.</div>';
+            el.innerHTML = `
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-heart-pulse text-red-400"></i> Efisiensi Aerobik</h3>
+                ${chart}
+                ${summary}
+                <p class="text-[10px] text-slate-500">Titik kosong = baseline Strava (10 & 24 Okt). Garis naik berarti kamu makin cepat di HR yang sama. Panas, kurang tidur, dan kelelahan ikut memengaruhi, jadi lihat tren beberapa minggu, bukan satu sesi. Hanya lari easy ≥ 3 km dengan HR di zona easy yang dihitung.</p>`;
+        }
+
+        // =====================================================================
+        // ZONA HR
+        // =====================================================================
+        function saveHrMax() {
+            const v = parseInt(document.getElementById('hr-max-input').value, 10);
+            if (!(v >= 140 && v <= 220)) { showToast('HR maks harus 140-220'); return; }
+            hrMax = v;
+            saveJSON('hm_52w_hrmax', hrMax);
+            updateDashboard();
+            renderScheduleWeek();
+            renderCoach();
+            showToast('Zona HR dihitung ulang');
+        }
+        function renderHrCard() {
+            const el = document.getElementById('hr-card');
+            const z = hrZones();
+            const rows = [
+                ['Z1', 'Pemulihan', `≤ ${z.z1Max}`, 'warm-up, jalan cepat'],
+                ['Z2', 'Easy aerobik', `${z.z2Min} - ${z.z2Max}`, 'semua easy & long run'],
+                ['Z3', 'Moderat ("abu-abu")', `${z.z3Min} - ${z.z3Max}`, 'hindari di hari easy'],
+                ['Z4', 'Threshold / pace HM', `${z.z4Min} - ${z.z4Max}`, 'tempo & pace lomba'],
+                ['Z5', 'VO2max', `≥ ${z.z5Min}`, 'interval pendek']
+            ].map(r => `<div class="flex justify-between items-center bg-dark-800 border border-dark-700 rounded-xl p-2.5">
+                <div><span class="font-bold ${r[0] === 'Z2' ? 'text-emerald-400' : 'text-white'}">${r[0]}</span> <span class="text-slate-300">${r[1]}</span><div class="text-[10px] text-slate-500">${r[3]}</div></div>
+                <div class="font-bold text-white">${r[2]} bpm</div></div>`).join('');
+            el.innerHTML = `
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-heart text-red-400"></i> Zona Heart Rate</h3>
+                <div class="flex gap-2 items-center">
+                    <label class="text-[11px] text-slate-400 whitespace-nowrap">HR maks</label>
+                    <input type="text" inputmode="numeric" id="hr-max-input" value="${z.max}" class="w-20 bg-dark-800 border border-dark-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-brand-500">
+                    <button onclick="saveHrMax()" class="bg-dark-800 border border-dark-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold">Hitung Ulang</button>
+                </div>
+                <div class="space-y-1.5 text-xs">${rows}</div>
+                <div class="text-[11px] text-slate-400">Setel zona yang sama di Strava agar analisis Strava cocok: Z1 0-${z.z1Max}, Z2 ${z.z2Min}-${z.z2Max}, Z3 ${z.z3Min}-${z.z3Max}, Z4 ${z.z4Min}-${z.z4Max}, Z5 ${z.z5Min}+.</div>
+                <div class="bg-dark-800 border border-dark-700 rounded-xl p-3 text-[11px] text-slate-300 space-y-1.5">
+                    <div class="font-semibold text-white">Dasar penentuan zona</div>
+                    <div>• Konsensus pakar 2025 (Sitko dkk., IJSPP): latihan "zona 2" sebaiknya tepat di bawah ambang laktat/ventilasi pertama (LT1/VT1), bukan angka HR tertentu.</div>
+                    <div>• Posisi LT1 dalam % HR maks sangat bervariasi antar orang, jadi zona di atas hanya titik awal. Patokan paling bisa diandalkan: talk test (masih bisa bicara kalimat penuh).</div>
+                    <div>• Bukti untuk distribusi ±80% easy / ±20% keras tergolong sedang, bukan mutlak. Yang paling sering terjadi: tanpa sengaja lari di Z3.</div>
+                    <div>• Rumus 220 − usia bisa meleset 15 bpm atau lebih, makanya HR maks diambil dari HR tertinggi yang pernah terbaca (Strava: 184).</div>
+                    <div>• Cuaca panas Surabaya menaikkan HR di pace yang sama. Utamakan talk test, dan jangan menilai HR 10 menit pertama (HR tertinggal dari usaha).</div>
+                </div>`;
+        }
+
+        // =====================================================================
+        // COACH AI (GEMINI)
+        // =====================================================================
+        const COACH_SYSTEM = `Kamu pelatih lari yang ramah, jujur, dan praktis untuk satu pelari rekreasional yang menarget half marathon 2:00:00 dalam 52 minggu. Jawab dalam Bahasa Indonesia yang santai dan singkat (maksimal sekitar 250 kata), langsung ke poin.
+Gunakan HANYA data pada JSON. Jangan mengarang angka. Jika data masih sedikit (kurang dari 2 lari tercatat), katakan data masih minim dan beri saran umum sesuai fase.
+Prinsip yang dipakai aplikasi: lari easy tepat di bawah ambang laktat pertama, dengan batas HR easy yang tertera dan talk test sebagai patokan utama; sekitar 80% volume easy dan sisanya keras; kenaikan volume mingguan wajar sekitar 10% atau kurang; Senin dan Kamis adalah hari puasa sehingga hanya untuk strength ringan, tanpa lari.
+Format: empat bagian dengan judul tebal: **Ringkasan**, **Yang sudah bagus**, **Perlu diperbaiki**, **Fokus 3 sesi ke depan**. Gunakan bullet dengan tanda "- ".
+Kamu bukan dokter. Jika ada nyeri tajam, pusing, nyeri dada, atau sesak yang tidak wajar, sarankan berhenti latihan dan konsultasi tenaga medis.`;
+
+        function getGeminiKey() { try { return (localStorage.getItem('hm_52w_gemini_key') || '').trim(); } catch (e) { return ''; } }
+        function getGeminiModel() { try { return (localStorage.getItem('hm_52w_gemini_model') || '').trim() || GEMINI_MODEL_DEFAULT; } catch (e) { return GEMINI_MODEL_DEFAULT; } }
+        function saveGeminiSettings() {
+            const k = document.getElementById('gem-key').value.trim();
+            const m = document.getElementById('gem-model').value.trim() || GEMINI_MODEL_DEFAULT;
+            if (!/^[A-Za-z0-9._-]{3,60}$/.test(m)) { showToast('Nama model tidak valid'); return; }
+            try {
+                if (k) localStorage.setItem('hm_52w_gemini_key', k); else localStorage.removeItem('hm_52w_gemini_key');
+                localStorage.setItem('hm_52w_gemini_model', m);
+            } catch (e) { showToast('Gagal menyimpan pengaturan'); return; }
+            showToast('Pengaturan coach disimpan');
+        }
+
+        function buildCoachContext() {
+            const z = hrZones(), prof = paceProfile(todayWeek);
+            const weeks = [];
+            for (let w = Math.max(1, todayWeek - 3); w <= todayWeek; w++) {
+                const st = weekStats(w);
+                weeks.push({ minggu: w, rencana_km: st.planned, aktual_km: r1(st.actual), sesi_selesai: `${st.done}/${st.plannedSess}`, easy_km: r1(st.easyKm), hr_di_atas_batas_easy_km: r1(st.modKm), keras_km: r1(st.hardKm) });
+            }
+            const recent = Object.keys(runLogs).map(key => {
+                const m = WEEK_KEY.exec(key); const w = parseInt(m[1], 10), d = parseInt(key.slice(-1), 10);
+                const wo = getWorkoutForDay(w, d), l = runLogs[key];
+                return { order: w * 7 + dayOrder(d), minggu: w, hari: dayNames[d], sesi: wo.title, tipe: wo.type, rencana_km: wo.km, jarak_km: r1(l.dist), pace_per_km: fmtPace(l.pace), hr_rata2: l.hr, hr_maks: l.hrMax, catatan: (dailyLogs[key] || '').slice(0, 160) };
+            }).sort((a, b) => a.order - b.order).slice(-10).map(x => { const { order, ...rest } = x; return rest; });
+            const upcoming = [];
+            const ord = [1, 2, 3, 4, 5, 6, 0];
+            let w = todayWeek, di = TODAY.status === 'active' ? dayOrder(TODAY.dow) : 0;
+            for (let guard = 0; guard < 30 && upcoming.length < 5 && w <= 52; guard++) {
+                const d = ord[di], wo = getWorkoutForDay(w, d);
+                if (wo.category !== 'Rest' && !completedWorkouts[`w${w}_d${d}`]) upcoming.push({ minggu: w, hari: dayNames[d], tanggal: toISO(sessionDate(w, d)), sesi: wo.title, km: wo.km, deskripsi: wo.desc.slice(0, 200) });
+                di++; if (di >= 7) { di = 0; w++; }
+            }
+            const pts = efficiencyPoints(); const sm = efSummary(pts);
+            return {
+                tujuan: 'Half marathon 2:00:00 (5:41/km) dalam 52 minggu',
+                tanggal_lomba: toISO(raceDate()),
+                status_jadwal: TODAY.status,
+                minggu_sekarang: todayWeek,
+                fase: getPhaseForWeek(todayWeek).name,
+                berat_kg_profil_strava: 85,
+                baseline_strava: { hm_2_agt_2026: '2:44:34 (best effort), HR rata-rata 170', volume_rata2_8_minggu_sebelum_program_km_per_minggu: 7 },
+                hr: { maks: z.max, easy_maks: z.z2Max, z3: [z.z3Min, z.z3Max], z4: [z.z4Min, z.z4Max], z5_min: z.z5Min },
+                pace_minggu_ini: { easy: `${fmtPace(prof.easyLo)}-${fmtPace(prof.easyHi)}`, tempo: fmtPace(prof.tempo), interval: fmtPace(prof.interval), hm: fmtPace(prof.hm), vdot: r1(prof.V) },
+                empat_minggu_terakhir: weeks,
+                lari_terbaru: recent,
+                sesi_berikutnya: upcoming,
+                tes_kalibrasi: testHistory.slice(-3),
+                efisiensi_aerobik: sm ? { titik: pts.length, pace_di_hr_135_awal: fmtPace(sm.first), pace_di_hr_135_terbaru: fmtPace(sm.last) } : null
+            };
+        }
+
+        function httpHint(status, detail) {
+            const d = detail ? ` (${String(detail).slice(0, 120)})` : '';
+            if (status === 400) return `Permintaan ditolak. Cek API key dan nama model.${d}`;
+            if (status === 401 || status === 403) return `API key ditolak atau tidak punya akses.${d}`;
+            if (status === 404) return `Model tidak ditemukan. Isi nama model lain di Pengaturan Coach.${d}`;
+            if (status === 429) return `Kuota atau batas permintaan tercapai. Coba lagi nanti.${d}`;
+            if (status >= 500) return `Server Gemini sedang bermasalah. Coba lagi sebentar lagi.${d}`;
+            return `Gagal (kode ${status}).${d}`;
+        }
+
+        function renderCoachText(text) {
+            const bold = t => t.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>');
+            let html = '', inList = false;
+            escapeHtml(text).split('\n').forEach(line => {
+                const m = /^\s*[-*•]\s+(.*)$/.exec(line);
+                if (m) { if (!inList) { html += '<ul class="list-disc pl-4 space-y-1 mt-1">'; inList = true; } html += `<li>${bold(m[1])}</li>`; }
+                else { if (inList) { html += '</ul>'; inList = false; } if (line.trim()) html += `<p class="mt-2">${bold(line)}</p>`; }
+            });
+            if (inList) html += '</ul>';
+            return html;
+        }
+
+        function renderCoachCard() {
+            const out = document.getElementById('coach-output');
+            const meta = document.getElementById('coach-meta');
+            if (!out) return;
+            const kEl = document.getElementById('gem-key'), mEl = document.getElementById('gem-model');
+            if (kEl && document.activeElement !== kEl) kEl.value = getGeminiKey();
+            if (mEl && document.activeElement !== mEl) mEl.value = getGeminiModel();
+            if (coachBusy) return;
+            if (coachCache) {
+                out.innerHTML = renderCoachText(coachCache.text);
+                const dt = new Date(coachCache.ts);
+                meta.textContent = `Review terakhir: ${dt.getDate()} ${monthShort[dt.getMonth()]} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())} • Minggu ${coachCache.week} • ${coachCache.model}. AI bisa keliru; ini bukan nasihat medis.`;
+            } else {
+                out.innerHTML = '<span class="text-slate-400">Belum ada review. Isi API key di Pengaturan Coach, catat beberapa lari, lalu tekan Minta Review.</span>';
+                meta.textContent = '';
+            }
+        }
+
+        let coachBusy = false;
+        async function requestCoach() {
+            if (coachBusy) return;
+            const out = document.getElementById('coach-output'), meta = document.getElementById('coach-meta'), btn = document.getElementById('coach-btn');
+            const key = getGeminiKey();
+            if (!key) { out.innerHTML = '<span class="text-amber-400">Isi Gemini API key dulu di Pengaturan Coach.</span>'; return; }
+            const model = getGeminiModel();
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+            const body = {
+                systemInstruction: { parts: [{ text: COACH_SYSTEM }] },
+                contents: [{ role: 'user', parts: [{ text: 'Data latihan (JSON):\n' + JSON.stringify(buildCoachContext()) + '\n\nBerikan review latihan sesuai format.' }] }],
+                generationConfig: { maxOutputTokens: 3000 }
+            };
+            coachBusy = true; btn.disabled = true; btn.classList.add('opacity-50');
+            out.innerHTML = '<span class="text-slate-400">Coach sedang membaca data latihanmu...</span>'; meta.textContent = '';
+            try {
+                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body: JSON.stringify(body) });
+                if (!res.ok) {
+                    let detail = '';
+                    try { const e = await res.json(); detail = (e && e.error && e.error.message) || ''; } catch (_) {}
+                    throw new Error(httpHint(res.status, detail));
+                }
+                const data = await res.json();
+                const cand = data && data.candidates && data.candidates[0];
+                const text = cand && cand.content && Array.isArray(cand.content.parts)
+                    ? cand.content.parts.filter(p => p && typeof p.text === 'string' && !p.thought).map(p => p.text).join('').trim() : '';
+                if (!text) {
+                    const why = (data && data.promptFeedback && data.promptFeedback.blockReason) || (cand && cand.finishReason) || 'tidak diketahui';
+                    throw new Error(`Gemini tidak mengembalikan teks (alasan: ${why}). Coba lagi.`);
+                }
+                coachCache = { ts: Date.now(), text: text.slice(0, 6000), model, week: todayWeek };
+                saveJSON('hm_52w_coach', coachCache);
+                coachBusy = false;
+                renderCoachCard();
+            } catch (e) {
+                const msg = (e instanceof TypeError) ? 'Tidak bisa terhubung ke Gemini. Cek koneksi internet.' : e.message;
+                out.innerHTML = `<span class="text-amber-400">${escapeHtml(msg)}</span>`;
+            } finally {
+                coachBusy = false; btn.disabled = false; btn.classList.remove('opacity-50');
+            }
+        }
+
+        function renderCoach() { renderCoachCard(); renderWeeklySummary(); renderEfCard(); renderHrCard(); }
+
+        // =====================================================================
+        // BACKUP & RESTORE
+        // =====================================================================
+        function buildBackup() {
+            return { app: 'hm52w', version: 2, exportedAt: new Date().toISOString(),
+                data: { completed: completedWorkouts, logs: dailyLogs, runlogs: runLogs, tests: testHistory, measured, restarts, hrmax: hrMax, coach: coachCache } };
+        }
+        function markBackup() { saveJSON('hm_52w_lastbackup', toISO(new Date())); renderBackupStatus(); }
+        function renderBackupStatus() {
+            const el = document.getElementById('backup-status'); if (!el) return;
+            const last = loadJSON('hm_52w_lastbackup', null);
+            const hasData = Object.keys(runLogs).length + Object.keys(completedWorkouts).length > 0;
+            if (typeof last === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(last)) {
+                const days = Math.round((TODAY.date - parseISO(last)) / 86400000);
+                const old = days > 14 && hasData;
+                el.innerHTML = `Backup terakhir: <span class="${old ? 'text-amber-400 font-semibold' : 'text-slate-200'}">${days <= 0 ? 'hari ini' : days + ' hari lalu'}</span>${old ? ' • sebaiknya backup lagi' : ''}`;
+            } else {
+                el.innerHTML = hasData ? '<span class="text-amber-400 font-semibold">Belum pernah backup.</span> Data hanya tersimpan di browser ini; backup sekarang.' : 'Belum ada data untuk dibackup.';
+            }
+        }
+        function downloadBackup() {
+            try {
+                const blob = new Blob([JSON.stringify(buildBackup(), null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `hm52w_backup_${toISO(new Date())}.json`;
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1500);
+                markBackup();
+            } catch (e) { showToast('Gagal membuat file. Coba tombol Salin.'); }
+        }
+        function fallbackCopy(text) {
+            const ta = document.getElementById('restore-text');
+            ta.value = text; ta.select();
+            try { document.execCommand('copy'); markBackup(); showToast('Backup disalin'); }
+            catch (e) { showToast('Salin manual dari kotak teks di bawah'); }
+        }
+        function copyBackup() {
+            const text = JSON.stringify(buildBackup());
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => { markBackup(); showToast('Backup disalin. Tempel ke Notes/Catatan.'); }).catch(() => fallbackCopy(text));
+            } else fallbackCopy(text);
+        }
+        function restoreFromString(text) {
+            let obj;
+            try { obj = JSON.parse(text); } catch (e) { showToast('Isi bukan JSON yang valid'); return false; }
+            if (!obj || obj.app !== 'hm52w' || !obj.data || typeof obj.data !== 'object') { showToast('Ini bukan file backup aplikasi ini'); return false; }
+            const d = obj.data;
+            const nc = cleanCompleted(d.completed), nl = cleanLogs(d.logs), nr = cleanRunLogs(d.runlogs), nt = cleanTests(d.tests);
+            const nm = cleanMeasured(d.measured), nre = cleanRestarts(d.restarts), nh = cleanHrMax(d.hrmax), ncoach = cleanCoach(d.coach);
+            const when = typeof obj.exportedAt === 'string' ? obj.exportedAt.slice(0, 10) : 'tanpa tanggal';
+            if (!confirm(`Pulihkan backup (${when}): ${Object.keys(nr).length} hasil lari, ${Object.keys(nc).length} sesi selesai?\nData di perangkat ini akan diganti.`)) return false;
+            completedWorkouts = nc; dailyLogs = nl; runLogs = nr; testHistory = nt; measured = nm; restarts = nre; hrMax = nh; coachCache = ncoach;
+            saveJSON('hm_52w_completed', nc); saveJSON('hm_52w_logs', nl); saveJSON('hm_52w_runlogs', nr); saveJSON('hm_52w_tests', nt);
+            saveJSON('hm_52w_measured', nm); saveJSON('hm_52w_restarts', nre); saveJSON('hm_52w_hrmax', nh); saveJSON('hm_52w_coach', ncoach);
+            recomputeToday();
+            refreshAll();
+            showToast('Data dipulihkan!');
+            return true;
+        }
+        function restoreFromFile(ev) {
+            const input = ev.target, file = input.files && input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => { restoreFromString(String(reader.result)); input.value = ''; };
+            reader.onerror = () => { showToast('File tidak bisa dibuka'); input.value = ''; };
+            reader.readAsText(file);
+        }
+        function restoreFromText() {
+            const t = document.getElementById('restore-text').value.trim();
+            if (!t) { showToast('Tempel isi backup dulu'); return; }
+            if (restoreFromString(t)) document.getElementById('restore-text').value = '';
+        }
+
+        // =====================================================================
         // RESET & TOAST
         // =====================================================================
         function resetData() {
-            if (confirm('Reset SEMUA data program (checklist, hasil lari, catatan, riwayat kalibrasi)? Tidak bisa dibatalkan.')) {
-                ['hm_52w_completed', 'hm_52w_logs', 'hm_52w_runlogs', 'hm_52w_tests', 'hm_52w_measured'].forEach(k => {
+            if (confirm('Reset SEMUA data program (checklist, hasil lari, catatan, kalibrasi, jadwal, HR maks, review coach)? Gemini API key tidak dihapus. Tidak bisa dibatalkan.')) {
+                ['hm_52w_completed', 'hm_52w_logs', 'hm_52w_runlogs', 'hm_52w_tests', 'hm_52w_measured', 'hm_52w_restarts', 'hm_52w_hrmax', 'hm_52w_coach', 'hm_52w_lastbackup'].forEach(k => {
                     try { localStorage.removeItem(k); } catch (e) {}
                 });
-                completedWorkouts = {}; dailyLogs = {}; runLogs = {}; testHistory = [];
-                measured = { vdot: V0, week: 0 };
-                updateDashboard();
-                renderScheduleWeek();
-                renderStats();
+                completedWorkouts = {}; dailyLogs = {}; runLogs = {}; testHistory = []; restarts = [];
+                measured = { vdot: V0, week: 0 }; hrMax = HRMAX_DEFAULT; coachCache = null;
+                recomputeToday();
+                refreshAll();
                 showToast('Progress direset!');
             }
         }
