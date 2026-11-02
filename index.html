@@ -607,6 +607,104 @@
         // =====================================================================
         // TAMPILAN HARI INI
         // =====================================================================
+        // =====================================================================
+        // IDE KONTEN + PANDUAN PER SESI LATIHAN
+        // Format tiap ide: [format, ide, langkah (pisah dengan |), caption]
+        // =====================================================================
+        const CONTENT_IDEAS = {
+            easy: [
+                ['Reel', 'Rekam 15 detik rute pagi plus layar jam yang menunjukkan HR aman. Teks: “Lari santai itu sengaja pelan”.', 'Rekam 5 detik suasana awal lari|Zoom ke layar jam (pace dan HR) selama 5 detik|Tutup dengan 5 detik langkah kaki atau matahari terbit', 'Pace pelan, HR aman. Lari santai bikin mesin aerobik makin kuat. #LariSantai #Zona2 #HM2Jam'],
+                ['Story', 'Screenshot Strava dengan pace dan HR berdampingan. Tambahkan stiker “Pelan itu strategi”.', 'Buka aktivitas Strava hari ini|Screenshot bagian pace dan HR|Tambah teks dan stiker, lalu posting', 'Hari ini sengaja pelan. HR terjaga, kaki tetap segar. #PelanItuStrategi #Strava'],
+                ['Caption Strava', 'Tulis satu kalimat jujur tentang rasa lari hari ini dan satu angka yang kamu banggakan.', 'Pilih satu angka: jarak, HR rata-rata, atau pace|Tulis perasaanmu dalam satu kalimat|Tambahkan satu hashtag target', 'Lari santai selesai. Nyaman dan terkendali, selangkah lagi menuju 2:00:00. #HM2Jam']
+            ],
+            tempo: [
+                ['Reel', 'Close-up layar jam saat pace tempo dengan teks “Keras tapi terkontrol”, lalu potong ke wajah berkeringat di akhir.', 'Rekam layar jam saat blok tempo berjalan|Rekam selfie singkat setelah blok terakhir|Susun urutannya: layar jam, selfie, total jarak', 'Hari tempo: semua blok selesai dan pace stabil. Keras tapi terkontrol. #LariTempo #HM2Jam'],
+                ['Story', 'Selfie sebelum dan sesudah tempo, tempel stiker pace rata-rata blok.', 'Ambil selfie sebelum pemanasan|Ambil selfie setelah pendinginan|Gabungkan jadi dua foto bersebelahan', 'Sebelum vs sesudah tempo. Orang yang sama, muka berbeda. #PelariPagi'],
+                ['Carousel', '3 slide: pace tempo, HR, dan alasan lari tempo menaikkan ambang laktat. Pakai angkamu sendiri.', 'Slide 1: pace dan durasi blok|Slide 2: HR dan perasaanmu|Slide 3: satu pelajaran dari sesi ini', 'Kenapa aku lari tempo seminggu sekali: 3 slide dari catatan latihanku. #TipsLari']
+            ],
+            interval: [
+                ['Reel', 'POV satu repetisi dengan penghitung di layar: “Repetisi 4 dari 6”. Tutup dengan jog pemulihan.', 'Rekam POV 5 detik saat repetisi berjalan|Rekam layar jam saat jog pemulihan|Tambahkan teks penghitung repetisi saat edit', 'Repetisi 4 dari 6. Kaki panas, napas berat, tetap semangat. #LatihanInterval #HM2Jam'],
+                ['Story', 'Screenshot daftar lap dari jam atau Strava, lalu lingkari repetisi tercepat.', 'Buka halaman lap di Strava|Screenshot semua repetisi|Lingkari yang tercepat dan beri komentar', 'Semua repetisi selesai, yang tercepat justru di akhir. Tenaga masih ada. #Interval'],
+                ['Caption Strava', 'Bandingkan pace repetisi hari ini dengan sesi interval beberapa minggu lalu.', 'Cari sesi interval sebelumnya di Strava|Catat selisih pace rata-ratanya|Tulis selisih itu di caption', 'Sesi interval yang sama, [X] detik per km lebih cepat dari sebelumnya. Progres nyata. #Progres']
+            ],
+            hm: [
+                ['Reel', 'Rekam layar jam saat menahan pace HM dengan teks “Ini pace hari lomba”.', 'Rekam layar jam di tengah blok pace HM|Rekam 5 detik pemandangan sekitar|Tutup dengan teks target 2:00:00', 'Latihan pace lomba: [X] km di pace HM. Hari-H makin terasa dekat. #PaceLomba #HM2Jam'],
+                ['Story', 'Tampilkan pace target 5:41 dan pace aktual hari ini sebagai dua stiker berdampingan.', 'Screenshot pace aktual dari Strava|Buat stiker teks pace target 5:41|Susun keduanya dalam satu story', 'Target 5:41/km, hari ini [pace]/km. Selisihnya makin kecil. #HM2Jam'],
+                ['Caption Strava', 'Ceritakan rasanya menahan pace lomba dan satu hal yang akan diperbaiki.', 'Tulis rasa di km pertama blok|Tulis rasa di km terakhir blok|Tutup dengan satu rencana perbaikan', 'Menahan pace lomba itu melelahkan tapi bikin yakin. Satu hal yang diperbaiki: [isi]. #HalfMarathon']
+            ],
+            long: [
+                ['Reel', 'Montase km demi km: satu klip 2 detik tiap 3 km dengan hitungan jarak di layar, akhiri dengan total jarak.', 'Rekam klip 2 detik tiap 3 km|Tambahkan teks jarak di tiap klip|Akhiri dengan foto layar jam berisi total jarak', 'Long run selesai: [X] km. Setiap km adalah keputusan untuk lanjut. #LongRun #HM2Jam'],
+                ['Story berseri', 'Tiga story: awal lari, cek tengah jalan dengan HR, dan garis akhir. Sebutkan bekal minum atau gel.', 'Story 1: foto sebelum start|Story 2: layar jam di tengah lari dan bekal yang dipakai|Story 3: foto akhir dengan total jarak', 'Cek tengah jalan: HR aman, kaki enak, minum teratur. #LongRun'],
+                ['Foto', 'Foto sepatu dan botol minum setelah lari, dengan jarak terlihat di jam.', 'Taruh sepatu dan botol di lantai atau bangku|Pastikan layar jam terlihat jelas|Ambil foto dari atas', 'Long run terpanjang di blok ini. Selangkah lebih dekat ke 2:00:00. #PersiapanHM']
+            ],
+            test: [
+                ['Story berseri', 'Dokumentasikan hari tes: pemanasan, start, dan hasil akhir dengan waktu di layar.', 'Story 1: pemanasan dan strides|Story 2: foto saat start|Story 3: layar jam dengan waktu akhir', 'Hari tes selesai. Hasilnya jadi patokan untuk kalibrasi pace berikutnya. #HariTes #HM2Jam'],
+                ['Carousel', 'Hasil tes dibanding target: waktu tes, VDOT baru, dan artinya untuk 2:00:00.', 'Slide 1: waktu tes dan pace|Slide 2: VDOT sebelum dan sesudah kalibrasi|Slide 3: rencana untuk beberapa minggu ke depan', 'Hasil tes: [waktu]. Ini artinya untuk target 2:00:00. #Kalibrasi']
+            ],
+            pre: [
+                ['Story', 'Foto santai sebelum shakeout dengan teks “Besok hari penting”.', 'Ambil foto sepatu dan botol minum|Tambahkan teks hitung mundur|Posting sebelum atau sesudah shakeout', 'Shakeout santai hari ini. Besok waktunya tampil. #HariTes #HM2Jam'],
+                ['Foto', 'Flat lay perlengkapan untuk besok: sepatu, jam, nomor dada atau bekal.', 'Susun semua perlengkapan di lantai|Foto dari atas dengan cahaya terang|Tambahkan teks hitung mundur', 'Perlengkapan siap, kaki siap. Besok kita lihat hasilnya. #PersiapanLomba']
+            ],
+            strength: [
+                ['Reel', 'Tiga gerakan dari sesi hari ini, masing-masing 10 detik. Teks: “Kekuatan untuk pelari”.', 'Rekam gerakan pertama 10 detik|Rekam dua gerakan lain dengan durasi sama|Gabungkan tiga klip dengan teks nama gerakan', 'Latihan kekuatan hari ini, tetap ringan karena puasa. Tubuh kuat, cedera jauh. #KekuatanPelari #HM2Jam'],
+                ['Story', 'Foto cermin gym atau pojok rumah dengan stiker hitung set yang selesai.', 'Ambil foto setelah set pertama|Perbarui stiker hitungan tiap set|Posting set terakhir sebagai penutup', 'Set terakhir selesai. Konsisten walau sedang puasa. #LatihanBeban'],
+                ['Carousel', 'Kenapa pelari perlu angkat beban: cegah cedera, hemat energi, dan stabil di km akhir.', 'Slide 1: manfaat untuk cegah cedera|Slide 2: manfaat untuk efisiensi lari|Slide 3: gerakan favoritmu dan alasannya', '3 alasan aku angkat beban saat latihan half marathon. #PelariAngkatBeban']
+            ],
+            rest: [
+                ['Story', 'Foto botol minum dan menu makan malam dengan teks “Istirahat juga latihan”.', 'Foto botol minum atau makanan|Tambahkan teks singkat|Posting sore atau malam hari', 'Hari istirahat. Pemulihan adalah tempat hasil latihan terbentuk. #HariIstirahat'],
+                ['Reel', 'Rutinitas peregangan 15 detik: betis, glute, dan paha luar.', 'Rekam 5 detik per gerakan|Tambahkan teks nama otot|Gabungkan jadi satu video pendek', '10 menit pemulihan hari ini supaya lari berikutnya terasa lebih ringan. #PemulihanPelari'],
+                ['Story polling', 'Polling: “Hari istirahat kamu ngapain?” dengan pilihan Tidur, Peregangan, Meal prep, atau Tetap lari.', 'Buka stiker polling di Story|Isi empat pilihan jawaban|Bahas hasilnya di story berikutnya', 'Pertanyaan hari istirahat: apa rutinitasmu? #KomunitasLari']
+            ],
+            race: [
+                ['Reel', 'Garis start, momen tengah lomba, dan garis finish dalam satu video. Akhiri dengan waktu resmi di layar.', 'Rekam di garis start sebelum bendera|Rekam satu momen di tengah lomba|Rekam finish dan layar jam dengan waktu akhir', '21,1 km selesai. Berbulan-bulan lari pagi dalam satu garis finish. #HalfMarathon #HM2Jam'],
+                ['Foto', 'Flat lay medali dan nomor dada dengan waktu finish dan ucapan terima kasih.', 'Taruh medali dan nomor dada di permukaan rata|Foto dari atas|Tulis waktu finish dan terima kasih', 'Selesai dalam [waktu]. Terima kasih untuk semua yang mendukung. #FinisherMedal']
+            ]
+        };
+
+        function contentKey(w) {
+            const t = String(w.title || '').toLowerCase();
+            if (w.type === 'Race') return 'race';
+            if (w.type === 'Test') return 'test';
+            if (w.type === 'LongRun') return 'long';
+            if (w.type === 'Strength') return 'strength';
+            if (w.type === 'Rest') return 'rest';
+            if (t.startsWith('tempo')) return 'tempo';
+            if (t.startsWith('interval') || t.startsWith('fartlek')) return 'interval';
+            if (t.startsWith('hm-pace')) return 'hm';
+            if (t.startsWith('shakeout')) return 'pre';
+            return 'easy';
+        }
+
+        function contentHTML(workout, week, dayIdx) {
+            const list = CONTENT_IDEAS[contentKey(workout)] || CONTENT_IDEAS.easy;
+            const x = list[(week * 7 + dayIdx) % list.length];
+            const steps = x[2].split('|').map(s => `<li>${escapeHtml(s)}</li>`).join('');
+            return `<details class="rounded-xl bg-violet-500/10 border border-violet-500/30 p-3">
+                <summary class="text-xs font-semibold text-violet-300 cursor-pointer">💡 Ide Konten • ${escapeHtml(x[0])}</summary>
+                <div class="mt-2 space-y-2">
+                    <p class="text-xs text-slate-200 leading-relaxed">${escapeHtml(x[1])}</p>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-violet-300 mb-1">Panduan</p>
+                        <ol class="list-decimal list-inside text-[11px] text-slate-400 space-y-0.5">${steps}</ol>
+                    </div>
+                    <p class="text-[11px] text-slate-300 italic">“${escapeHtml(x[3])}”</p>
+                    <button type="button" data-cap="${encodeURIComponent(x[3])}" onclick="copyCaption(this)" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-violet-500/40 text-violet-300 bg-dark-800">Salin caption</button>
+                </div>
+            </details>`;
+        }
+
+        function copyCaption(btn) {
+            const t = decodeURIComponent(btn.dataset.cap);
+            const ok = () => showToast('Caption disalin');
+            const fb = () => {
+                const a = document.createElement('textarea');
+                a.value = t; document.body.appendChild(a); a.select();
+                try { document.execCommand('copy'); ok(); } catch (e) { showToast('Salin manual dari teks di atas'); }
+                a.remove();
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fb); else fb();
+        }
+
         window.onload = function() {
             initWeekSelector();
             updateDashboard();
@@ -712,6 +810,7 @@
                 </div>
                 <p class="text-xs text-slate-400 leading-relaxed">${workout.desc}</p>
                 ${runVerdict(workout, runLogs[key], prof)}
+                ${contentHTML(workout, currentWeek, selectedDayForDashboard)}
                 <div class="flex items-center justify-between pt-3 border-t border-dark-800">
                     <span class="text-xs text-slate-400">Status Latihan:</span>
                     <button onclick="toggleWorkout('${key}')" class="px-4 py-2 rounded-xl text-xs font-semibold transition ${isCompleted ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-dark-800 hover:bg-dark-700 text-slate-300 border border-dark-700'}">
@@ -826,6 +925,7 @@
                             </div>
                             <div class="text-xs font-medium text-slate-200 mt-0.5">${workout.title}</div>
                             <div class="text-[11px] text-slate-400">${workout.desc}</div>
+                            <div class="mt-2">${contentHTML(workout, currentWeek, dayIdx)}</div>
                             ${lg ? `<div class="text-[11px] text-emerald-400 mt-1">Aktual: ${fmtKm(lg.dist)} km • ${fmtPace(lg.pace)}/km${lg.hr ? ' • HR ' + lg.hr : ''}</div>` : ''}
                         </div>
                     </div>
