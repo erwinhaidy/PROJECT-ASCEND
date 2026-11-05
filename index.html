@@ -536,7 +536,7 @@
                 distance: '—', km: 0, category: 'Strength' };
         }
 
-        function getWorkoutForDay(week, dayIndex) {
+        function getWorkoutBase(week, dayIndex) {
             const prof = paceProfile(week);
             const km = baseKm(week);
             const easy = `${fmtPace(prof.easyLo)}-${fmtPace(prof.easyHi)}/km`;
@@ -574,14 +574,14 @@
                 case 5: { // Jumat
                     if (week === 52) return { type: 'Rest', title: 'Rest Total', desc: 'Istirahat. Siapkan perlengkapan & nutrisi lomba.', distance: '—', km: 0, category: 'Rest' };
                     if (testDist) return run('Run', `Shakeout Run (${fmtKm(3)} km)`, `Besok tes: lari sangat santai 3 km (${easy}), tanpa strides keras.`, 3);
-                    if (phase.id <= 2) return run('Run', `Easy Run (${fmtKm(km.fri)} km)`, `${easyNote} Lanjutkan 10 menit core (plank, bird-dog, dead bug).`, km.fri);
+                    if (phase.id <= 2) return run('Run', `Easy Run (${fmtKm(km.fri)} km)`, `${easyNote}`, km.fri);
                     return run('Run', `Easy Run + Strides (${fmtKm(km.fri)} km)`, `${easyNote} Tutup dengan 4×20 detik strides. Besok long run, jangan terlalu capek.`, km.fri);
                 }
                 case 6: { // Sabtu
                     if (week === 52) return run('Run', `Shakeout (${fmtKm(3)} km)`, 'Lari 3 km sangat santai + 4 strides pendek. Makan malam karbohidrat, tidur lebih awal.', 3);
                     if (testDist) {
                         const label = testDist === 15000 ? '15 km' : `${testDist / 1000} km`;
-                        return run('Test', `TES ${label} (all-out terkontrol)`, `Pemanasan 15 menit easy + 4 strides → ${label} dengan usaha terbaik yang stabil (jangan start terlalu cepat) → pendinginan 10 menit. Catat hasilnya di tab Statistik → Kalibrasi.`, TEST_TOTAL_KM[testDist]);
+                        return run('Test', `TES ${label} (all-out terkontrol)`, `Pemanasan 15 menit easy + 4 strides → ${label} dengan usaha terbaik yang stabil (jangan start terlalu cepat) → pendinginan 10 menit. Catat hasilnya di tab Statistik → Kalibrasi, dan catat juga HR rata-rata 20 menit terakhir (≈ HR ambang laktat) untuk menyesuaikan zona di tab Coach.`, TEST_TOTAL_KM[testDist]);
                     }
                     let extra = '';
                     if (phase.id === 3 && !isCutback(week)) extra = ` 3 km terakhir naikkan sedikit ke ±${fmtPace(prof.hm + 20)}/km.`;
@@ -590,6 +590,35 @@
                     return run('LongRun', `Long Run (${fmtKm(km.long)} km)`, `Menu utama ketahanan akhir pekan. Pace ${easy} (HR ≤ ${easyCap()}); bawa air, minum tiap 20-25 menit.${extra}`, km.long);
                 }
             }
+        }
+
+        // Core 2x seminggu (Selasa & Jumat), setelah lari. Ringan di Jumat, hari kualitas, minggu ringan, dan taper.
+        function coreBlock(week, dayIdx, w) {
+            if (week >= 52 || (dayIdx !== 2 && dayIdx !== 5)) return null;
+            if (w.type === 'Rest' || w.type === 'Test' || w.type === 'Strength' || /^shakeout/i.test(w.title)) return null;
+            const pid = (PHASES.find(x => week >= x.start && week <= x.end) || PHASES[3]).id;
+            const light = dayIdx === 5 || w.type === 'Quality' || week >= 50 || isCutback(week);
+            const n = light ? 2 : 3;
+            let items;
+            if (week >= 50) items = [`Dead bug ${n}×8/sisi`, `Plank ${n}×30 dtk`];
+            else if (pid === 1) items = [`Dead bug ${n}×8/sisi`, `Plank ${n}×30-40 dtk`, `Bird-dog ${n}×8/sisi`];
+            else if (pid === 2) items = [`Dead bug ${n}×10/sisi`, `Plank ${n}×40 dtk`, `Side plank ${n}×30 dtk/sisi`, `Leg raise (tidur) ${n}×8`];
+            else if (pid === 3) items = [`Hollow hold ${n}×20 dtk`, `Leg raise (tidur/gantung) ${n}×10`, `Side plank ${n}×30 dtk/sisi`, `Ab wheel dari lutut ${n}×6`];
+            else items = [`Hollow hold ${n}×25 dtk`, `Leg raise ${n}×10`, `Ab wheel dari lutut ${n}×8`, `Side plank ${n}×35 dtk/sisi`];
+            return { menit: light ? 8 : 12, items, light };
+        }
+        function getWorkoutForDay(week, dayIndex) {
+            const w = getWorkoutBase(week, dayIndex);
+            const c = coreBlock(week, dayIndex, w);
+            return c ? Object.assign({}, w, { core: c }) : w;
+        }
+        function coreHTML(w) {
+            if (!w.core) return '';
+            return `<div class="rounded-xl bg-sky-500/10 border border-sky-500/30 p-3">
+                <div class="text-xs font-semibold text-sky-300">🧱 Core ${w.core.menit} menit (setelah lari${w.core.light ? ', versi ringan' : ''})</div>
+                <div class="text-[11px] text-slate-300 mt-1 leading-relaxed">${w.core.items.map(escapeHtml).join(' • ')}</div>
+                <div class="text-[10px] text-slate-500 mt-1">Gerak pelan dan terkontrol, berhenti sebelum bentuk rusak. Dilakukan setelah lari, bukan sebelum.</div>
+            </div>`;
         }
 
         function weekRunKm(w) {
@@ -810,6 +839,7 @@
                 </div>
                 <p class="text-xs text-slate-400 leading-relaxed">${workout.desc}</p>
                 ${runVerdict(workout, runLogs[key], prof)}
+                ${coreHTML(workout)}
                 ${contentHTML(workout, currentWeek, selectedDayForDashboard)}
                 <div class="flex items-center justify-between pt-3 border-t border-dark-800">
                     <span class="text-xs text-slate-400">Status Latihan:</span>
@@ -925,6 +955,7 @@
                             </div>
                             <div class="text-xs font-medium text-slate-200 mt-0.5">${workout.title}</div>
                             <div class="text-[11px] text-slate-400">${workout.desc}</div>
+                            ${workout.core ? `<div class="mt-2">${coreHTML(workout)}</div>` : ''}
                             <div class="mt-2">${contentHTML(workout, currentWeek, dayIdx)}</div>
                             ${lg ? `<div class="text-[11px] text-emerald-400 mt-1">Aktual: ${fmtKm(lg.dist)} km • ${fmtPace(lg.pace)}/km${lg.hr ? ' • HR ' + lg.hr : ''}</div>` : ''}
                         </div>
@@ -1341,6 +1372,15 @@
                 </div>
                 <div class="space-y-1.5 text-xs">${rows}</div>
                 <div class="text-[11px] text-slate-400">Setel zona yang sama di Strava agar analisis Strava cocok: Z1 0-${z.z1Max}, Z2 ${z.z2Min}-${z.z2Max}, Z3 ${z.z3Min}-${z.z3Max}, Z4 ${z.z4Min}-${z.z4Max}, Z5 ${z.z5Min}+.</div>
+                <div class="bg-dark-800 border border-dark-700 rounded-xl p-3 text-[11px] text-slate-300 space-y-1.5">
+                    <div class="font-semibold text-white">Penyesuaian untukmu (dari data Strava)</div>
+                    <div>• HR maks 184 terbaca saat HM 2 Agt dan HR rata-rata HM 170 (±92% maks), jadi ambang laktat kira-kira 165-170 (≈ 167).</div>
+                    <div>• Easy 9:26/km @ 130 dan 9:38/km @ 139 jatuh di Z2, jadi zona ini cocok. Zona Strava lama (dari HR maks 178, Z2 108-124) terlalu rendah untukmu: ganti ke zona di atas.</div>
+                    <div>• Easy: sasaran ${z.z2Min}-${z.z2Max - 4}, batas keras ${z.z2Max}. Saat panas, setelah puasa, atau kurang tidur, pakai separuh bawah.</div>
+                    <div>• Long run: mulai ≤ ${z.z2Min + 5}, boleh naik pelan sampai ${z.z2Max}; di atas itu pelankan.</div>
+                    <div>• Tempo & pace HM: pace jadi patokan, HR ±${z.z4Min - 3}-${z.z4Max - 4} wajar setelah 3-5 menit. HR 170 sepanjang HM pertama terlalu tinggi untuk dipertahankan.</div>
+                    <div>• Kalibrasi ulang: di hari tes, catat HR rata-rata 20 menit terakhir (≈ HR ambang). Kalau beda lebih dari 5 bpm dari 167, geser zona.</div>
+                </div>
                 <div class="bg-dark-800 border border-dark-700 rounded-xl p-3 text-[11px] text-slate-300 space-y-1.5">
                     <div class="font-semibold text-white">Dasar penentuan zona</div>
                     <div>• Konsensus pakar 2025 (Sitko dkk., IJSPP): latihan "zona 2" sebaiknya tepat di bawah ambang laktat/ventilasi pertama (LT1/VT1), bukan angka HR tertentu.</div>
